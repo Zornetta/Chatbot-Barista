@@ -1,0 +1,5 @@
+Resumen
+Plan de Acción - Entrenamiento del Modelo
+1- Base de Conocimiento (Menú Data)
+2- Preparación de Datos de Entrenamiento
+3- Flujo de Procesamiento

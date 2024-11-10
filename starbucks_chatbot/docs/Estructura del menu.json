@@ -1,0 +1,20 @@
+{
+    "bebidas": {
+      "cafe": [
+        {
+          "id": "latte",
+          "nombre": "Café Latte",
+          "categoria": "cafe",
+          "tamaños": ["tall", "grande", "venti"],
+          "personalizaciones": {
+            "leche": ["entera", "descremada", "almendra", "soya"],
+            "shots": ["simple", "doble"],
+            "syrups": ["vainilla", "caramelo", "avellana"]
+          },
+          "keywords": [
+            "latte", "café con leche", "late"
+          ]
+        }
+      ]
+    }
+  }

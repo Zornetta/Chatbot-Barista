@@ -1,0 +1,16 @@
+{
+    "intents": {
+      "ordenar_bebida": {
+        "frases": [
+          "Quiero un latte grande",
+          "Me das un café con leche",
+          "Prepárame un latte con leche de almendra",
+          "Un late grande con shot extra"
+        ],
+        "respuestas": [
+          "¿Qué tamaño prefieres para tu {bebida}?",
+          "¿Deseas personalizar tu {bebida}?"
+        ]
+      }
+    }
+  }
