@@ -1,0 +1,128 @@
+@startuml Starbucks Chatbot
+
+' Estilos
+skinparam class {
+    BackgroundColor White
+    ArrowColor Black
+    BorderColor Black
+}
+
+package "Domain" {
+    interface IMenuRepository {
+        + get_menu(): Dict
+        + search_item(query: str): Optional[MenuItem]
+    }
+
+    interface IIntentRepository {
+        + get_intents(): List[Intent]
+        + get_intent_by_name(name: str): Optional[Intent]
+    }
+
+    class MenuItem {
+        + id: str
+        + name: str
+        + category: str
+        + sizes: List[str]
+        + prices: Dict[str, float]
+        + customizations: Dict[str, List[str]]
+        + keywords: List[str]
+    }
+
+    class Intent {
+        + name: str
+        + examples: List[str]
+        + entities: Dict[str, List[str]]
+    }
+
+    class Order {
+        + items: List[OrderItem]
+        + total: float
+        + add_item(item: OrderItem)
+        + remove_item(item: OrderItem)
+        + calculate_total(): float
+    }
+
+    class OrderItem {
+        + menu_item: MenuItem
+        + size: str
+        + customizations: List[str]
+        + quantity: int
+        + calculate_price(): float
+    }
+}
+
+package "Infrastructure" {
+    class JSONMenuRepository {
+        - file_path: str
+        + get_menu(): Dict
+        + search_item(query: str): Optional[MenuItem]
+    }
+
+    class JSONIntentRepository {
+        - file_path: str
+        + get_intents(): List[Intent]
+        + get_intent_by_name(name: str): Optional[Intent]
+    }
+
+    class NLPProcessor {
+        - nlp: spacy.Language
+        - vectorizer: TfidfVectorizer
+        - menu_data: Dict
+        - intents_data: List
+        + preprocess_text(text: str): str
+        + extract_entities(text: str): ExtractedEntities
+        + prepare_for_classification(text: str): ndarray
+        + process_input(text: str): Tuple[ndarray, ExtractedEntities]
+    }
+
+    class IntentClassifier {
+        - model: sklearn.base.BaseEstimator
+        - processor: NLPProcessor
+        + train(intents: List[Intent])
+        + predict(text: str): str
+    }
+}
+
+package "Application" {
+    class ChatbotService {
+        - menu_repo: IMenuRepository
+        - intent_repo: IIntentRepository
+        - nlp_processor: NLPProcessor
+        - intent_classifier: IntentClassifier
+        + process_message(text: str): Response
+        + create_order(items: List[OrderItem]): Order
+        - handle_intent(intent: str, entities: ExtractedEntities): Response
+    }
+
+    class Response {
+        + text: str
+        + suggested_actions: List[str]
+        + order: Optional[Order]
+    }
+}
+
+package "Interfaces" {
+    class ConsoleUI {
+        - chatbot: ChatbotService
+        + run()
+        - display_response(response: Response)
+    }
+}
+
+' Relaciones
+JSONMenuRepository ..|> IMenuRepository
+JSONIntentRepository ..|> IIntentRepository
+
+ChatbotService --> IMenuRepository
+ChatbotService --> IIntentRepository
+ChatbotService --> NLPProcessor
+ChatbotService --> IntentClassifier
+
+Order "1" *-- "many" OrderItem
+OrderItem --> MenuItem
+
+ConsoleUI --> ChatbotService
+
+IntentClassifier --> NLPProcessor
+
+@enduml

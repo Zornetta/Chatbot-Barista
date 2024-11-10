@@ -1,0 +1,136 @@
+[
+    {
+        "intent": "ordenar_bebida",
+        "examples": [
+            "Quiero un latte grande",
+            "Me gustaría un cappuccino con leche de almendra",
+            "Dame un americano doble",
+            "Un frapuccino de caramelo venti",
+            "Me preparas un chai tea latte",
+            "Quisiera un chocolate caliente con crema",
+            "Un green tea helado por favor",
+            "Me das un refresher de mango",
+            "Quiero un mocha frappuccino grande con leche descremada",
+            "Un americano con shot extra"
+        ],
+        "entities": {
+            "bebida": [
+                "latte", "cappuccino", "americano", "frapuccino",
+                "chai tea", "chocolate caliente", "green tea", "refresher",
+                "mocha frappuccino"
+            ],
+            "tamaño": ["tall", "grande", "venti"],
+            "personalización": [
+                "leche de almendra", "doble", "caramelo", "helado",
+                "shot extra", "leche descremada", "con crema"
+            ]
+        }
+    },
+    {
+        "intent": "ordenar_comida",
+        "examples": [
+            "Quiero un croissant caliente",
+            "Me das un muffin de arándanos",
+            "Un sandwich de jamón y queso con pan integral",
+            "Quisiera una ensalada César con pollo",
+            "Un brownie con helado por favor",
+            "Dame un pack de 3 cookies",
+            "Un bagel con queso crema",
+            "Una porción de cheesecake con salsa de frutos rojos",
+            "Ensalada mediterránea sin aceitunas",
+            "Un sandwich de pollo caliente"
+        ],
+        "entities": {
+            "comida": [
+                "croissant", "muffin", "sandwich", "ensalada",
+                "brownie", "cookies", "bagel", "cheesecake"
+            ],
+            "temperatura": ["caliente", "frío", "ambiente"],
+            "personalización": [
+                "pan integral", "con pollo", "con helado",
+                "queso crema", "salsa de frutos rojos", "sin aceitunas"
+            ]
+        }
+    },
+    {
+        "intent": "preguntar_precio",
+        "examples": [
+            "Cuánto cuesta un latte grande?",
+            "Precio del cappuccino",
+            "Cuánto sale un muffin?",
+            "Cuál es el precio del sandwich de pollo?",
+            "A cuánto está el frappuccino venti?",
+            "Cuánto sale agregar un shot extra?",
+            "Precio de la leche de almendra extra",
+            "Cuánto cuesta un pack de cookies?",
+            "A cuánto está la ensalada César?",
+            "Precio del chai tea latte grande"
+        ],
+        "entities": {
+            "producto": ["latte", "cappuccino", "muffin", "sandwich", "frappuccino",
+                        "cookies", "ensalada", "chai tea latte"],
+            "tamaño": ["grande", "venti"],
+            "personalización": ["shot extra", "leche de almendra"]
+        }
+    },
+    {
+        "intent": "preguntar_personalizacion",
+        "examples": [
+            "Qué tipos de leche tienen?",
+            "Con qué puedo personalizar mi café?",
+            "Qué jarabes tienen disponibles?",
+            "Puedo pedir mi café sin lactosa?",
+            "Qué opciones de pan tienen para los sandwiches?",
+            "Se puede pedir extra shot en cualquier café?",
+            "Qué salsas tienen para el cheesecake?",
+            "Puedo pedir mi bebida sin crema?",
+            "Qué aderezos tienen para las ensaladas?",
+            "Se puede pedir el croissant caliente?"
+        ]
+    },
+    {
+        "intent": "consultar_menu",
+        "examples": [
+            "Qué bebidas tienen?",
+            "Me muestras el menú de comidas?",
+            "Qué tipos de café tienen?",
+            "Cuáles son sus frappuccinos?",
+            "Qué ensaladas tienen disponibles?",
+            "Me decís los postres que tienen?",
+            "Qué sandwiches hay?",
+            "Tienen opciones veganas?",
+            "Qué tienen para desayunar?",
+            "Cuáles son sus bebidas frías?"
+        ]
+    },
+    {
+        "intent": "confirmar_orden",
+        "examples": [
+            "Sí, eso es todo",
+            "Confirmo mi pedido",
+            "Está correcto",
+            "Sí, quiero ordenar eso",
+            "Perfecto, eso sería todo",
+            "Sí, ese es mi pedido",
+            "Correcto, puede proceder",
+            "Sí, está bien así",
+            "Exacto, eso quiero",
+            "Sí, lo confirmo"
+        ]
+    },
+    {
+        "intent": "cancelar_orden",
+        "examples": [
+            "Quiero cancelar mi pedido",
+            "No, mejor no",
+            "Cancela la orden por favor",
+            "Me arrepentí, no quiero nada",
+            "Dejá, no voy a ordenar",
+            "Mejor otro día",
+            "Cancela todo",
+            "No, gracias",
+            "Mejor lo dejamos así",
+            "No quiero proceder con la orden"
+        ]
+    }
+]
