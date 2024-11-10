@@ -1,0 +1,27 @@
+{
+    "src_path": "./",
+    "layers": [
+        "domain",
+        "infrastructure",
+        "application",
+        "interfaces"
+    ],
+    "exclude": {
+        "src": {
+            "domain": [
+                { "path": "deprecated_.*\\.py$" }
+            ],
+            "application": [
+                { "path": "old_.*\\.py$" }
+            ]
+        },
+        "tests": {
+            "domain": [
+                { "path": "skip_.*\\.py$" }
+            ],
+            "application": [
+                // { "path": "menu.test*\\.py$" }
+            ]
+        }
+    }
+}
