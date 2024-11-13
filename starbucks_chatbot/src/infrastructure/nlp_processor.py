@@ -149,7 +149,7 @@ class NLPProcessor:
         # Debug
         print(f"\nExtracción de entidades:")
         print(f"- Texto original: {text}")
-        print(f"- Keywords disponibles: {self.bebidas_keywords}")
+        # print(f"- Keywords disponibles: {self.bebidas_keywords}")
         print(f"- Entidades encontradas: {entities}")
 
         return entities

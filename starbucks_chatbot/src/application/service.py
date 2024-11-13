@@ -49,6 +49,11 @@ class ChatbotService:
             "cancelar_orden": "cancelar el pedido"
         }
 
+        # Intenciones que no necesitan confirmación
+        self.direct_intents = {
+            "consultar_menu"
+        }
+
     def process_message(self, text: str) -> Response:
         """
         Procesa un mensaje del usuario y genera una respuesta
@@ -87,12 +92,11 @@ class ChatbotService:
             self.conversation_state.last_input = text
             self.conversation_state.predicted_intent = intent
 
-            # Debug: Imprimir estado actualizado
-            print(f"\nEstado actualizado:")
-            print(f"- Entidades guardadas: {self.conversation_state.last_entities}")
-            print(f"- Intent guardado: {self.conversation_state.predicted_intent}")
+            # Si la intención es directa, procesarla inmediatamente
+            if intent in self.direct_intents:
+                return self.handle_intent(intent, entities)
 
-            # Solicitar confirmación de intención
+            # Para otras intenciones, solicitar confirmación
             self.conversation_state.pending_intent_confirmation = True
             intent_description = self.intent_descriptions.get(intent, intent)
 
