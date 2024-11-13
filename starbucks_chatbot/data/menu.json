@@ -1,663 +1,1000 @@
 {
-    "bebidas": {
-      "cafe": [
-        {
-          "id": "latte",
-          "nombre": "Café Latte",
-          "categoria": "cafe",
-          "tamaños": [
-            "tall",
-            "grande",
-            "venti"
+  "bebidas": {
+    "cafe": [
+      {
+        "id": "latte",
+        "nombre": "Café Latte",
+        "categoria": "cafe",
+        "tamaños": [
+          "tall",
+          "grande",
+          "venti"
+        ],
+        "precios": {
+          "tall": 750,
+          "grande": 850,
+          "venti": 950
+        },
+        "personalizaciones": {
+          "leche": [
+            "entera",
+            "descremada",
+            "almendra",
+            "soya"
           ],
-          "precios": {
-            "tall": 750,
-            "grande": 850,
-            "venti": 950
-          },
-          "personalizaciones": {
-            "leche": [
-              "entera",
-              "descremada",
-              "almendra",
-              "soya"
-            ],
-            "shots": [
-              "simple",
-              "doble"
-            ],
-            "syrups": [
-              "vainilla",
-              "caramelo",
-              "avellana"
-            ]
-          },
-          "precios_personalizacion": {
-            "leche_almendra": 100,
-            "leche_soya": 100,
-            "shot_extra": 150,
-            "syrup": 100
-          },
-          "keywords": [
-            "latte",
-            "café con leche",
-            "late",
-            "cafe latte"
+          "shots": [
+            "simple",
+            "doble"
+          ],
+          "syrups": [
+            "vainilla",
+            "caramelo",
+            "avellana"
           ]
         },
-        {
-          "id": "cappuccino",
-          "nombre": "Cappuccino",
-          "categoria": "cafe",
-          "tamaños": [
-            "tall",
-            "grande",
-            "venti"
+        "precios_personalizacion": {
+          "leche_almendra": 100,
+          "leche_soya": 100,
+          "shot_extra": 150,
+          "syrup": 100
+        },
+        "keywords": [
+          "latte",
+          "late",
+          "latté",
+          "café con leche",
+          "cafe con leche",
+          "café latte",
+          "cafe latte",
+          "cafélatte",
+          "cafelatte",
+          "cafe late",
+          "café late",
+          "coffee latte",
+          "coffee late",
+          "latte tradicional",
+          "late tradicional",
+          "café",
+          "cafe"
+        ]
+      },
+      {
+        "id": "cappuccino",
+        "nombre": "Cappuccino",
+        "categoria": "cafe",
+        "tamaños": [
+          "tall",
+          "grande",
+          "venti"
+        ],
+        "precios": {
+          "tall": 700,
+          "grande": 800,
+          "venti": 900
+        },
+        "personalizaciones": {
+          "leche": [
+            "entera",
+            "descremada",
+            "almendra",
+            "soya"
           ],
-          "precios": {
-            "tall": 700,
-            "grande": 800,
-            "venti": 900
-          },
-          "personalizaciones": {
-            "leche": [
-              "entera",
-              "descremada",
-              "almendra",
-              "soya"
-            ],
-            "shots": [
-              "simple",
-              "doble"
-            ],
-            "syrups": [
-              "vainilla",
-              "caramelo",
-              "canela"
-            ]
-          },
-          "precios_personalizacion": {
-            "leche_almendra": 100,
-            "leche_soya": 100,
-            "shot_extra": 150,
-            "syrup": 100
-          },
-          "keywords": [
-            "cappuccino",
-            "capuchino",
-            "cafe capuchino"
+          "shots": [
+            "simple",
+            "doble"
+          ],
+          "syrups": [
+            "vainilla",
+            "caramelo",
+            "canela"
           ]
         },
-        {
-          "id": "americano",
-          "nombre": "Café Americano",
-          "categoria": "cafe",
-          "tamaños": [
-            "tall",
-            "grande",
-            "venti"
+        "precios_personalizacion": {
+          "leche_almendra": 100,
+          "leche_soya": 100,
+          "shot_extra": 150,
+          "syrup": 100
+        },
+        "keywords": [
+          "cappuccino",
+          "capuccino",
+          "capuchino",
+          "cappucino",
+          "capucino",
+          "capucho",
+          "café cappuccino",
+          "cafe cappuccino",
+          "café capuchino",
+          "cafe capuchino",
+          "cappuccino tradicional",
+          "capuchino tradicional",
+          "cap",
+          "capu",
+          "cappu",
+          "café italiano",
+          "cafe italiano"
+        ]
+      },
+      {
+        "id": "americano",
+        "nombre": "Café Americano",
+        "categoria": "cafe",
+        "tamaños": [
+          "tall",
+          "grande",
+          "venti"
+        ],
+        "precios": {
+          "tall": 600,
+          "grande": 700,
+          "venti": 800
+        },
+        "personalizaciones": {
+          "shots": [
+            "simple",
+            "doble",
+            "triple"
           ],
-          "precios": {
-            "tall": 600,
-            "grande": 700,
-            "venti": 800
-          },
-          "personalizaciones": {
-            "shots": [
-              "simple",
-              "doble",
-              "triple"
-            ],
-            "temperatura": [
-              "caliente",
-              "tibio"
-            ]
-          },
-          "precios_personalizacion": {
-            "shot_extra": 150
-          },
-          "keywords": [
-            "americano",
-            "cafe americano",
-            "american coffee"
-          ]
-        }
-      ],
-      "frapuccinos": [
-        {
-          "id": "mocha_frapp",
-          "nombre": "Mocha Frappuccino",
-          "categoria": "frapuccino",
-          "tamaños": [
-            "tall",
-            "grande",
-            "venti"
-          ],
-          "precios": {
-            "tall": 800,
-            "grande": 900,
-            "venti": 1000
-          },
-          "personalizaciones": {
-            "leche": [
-              "entera",
-              "descremada",
-              "almendra",
-              "soya"
-            ],
-            "crema": [
-              "con",
-              "sin"
-            ],
-            "syrups": [
-              "chocolate extra",
-              "caramelo"
-            ]
-          },
-          "precios_personalizacion": {
-            "leche_almendra": 100,
-            "leche_soya": 100,
-            "syrup_extra": 100
-          },
-          "keywords": [
-            "frappuccino de mocha",
-            "mocha frapp",
-            "frap de chocolate"
+          "temperatura": [
+            "caliente",
+            "tibio"
           ]
         },
-        {
-          "id": "caramel_frapp",
-          "nombre": "Caramel Frappuccino",
-          "categoria": "frapuccino",
-          "tamaños": [
-            "tall",
-            "grande",
-            "venti"
+        "precios_personalizacion": {
+          "shot_extra": 150
+        },
+        "keywords": [
+          "americano",
+          "café americano",
+          "cafe americano",
+          "american coffee",
+          "café negro",
+          "cafe negro",
+          "negro",
+          "coffee black",
+          "black coffee",
+          "café normal",
+          "cafe normal",
+          "café regular",
+          "cafe regular",
+          "americano tradicional",
+          "espresso americano",
+          "expreso americano"
+        ]
+      }
+    ],
+    "frapuccinos": [
+      {
+        "id": "mocha_frapp",
+        "nombre": "Mocha Frappuccino",
+        "categoria": "frapuccino",
+        "tamaños": [
+          "tall",
+          "grande",
+          "venti"
+        ],
+        "precios": {
+          "tall": 800,
+          "grande": 900,
+          "venti": 1000
+        },
+        "personalizaciones": {
+          "leche": [
+            "entera",
+            "descremada",
+            "almendra",
+            "soya"
           ],
-          "precios": {
-            "tall": 800,
-            "grande": 900,
-            "venti": 1000
-          },
-          "personalizaciones": {
-            "leche": [
-              "entera",
-              "descremada",
-              "almendra",
-              "soya"
-            ],
-            "crema": [
-              "con",
-              "sin"
-            ],
-            "topping": [
-              "caramelo extra",
-              "crunch"
-            ]
-          },
-          "precios_personalizacion": {
-            "leche_almendra": 100,
-            "leche_soya": 100,
-            "topping_extra": 100
-          },
-          "keywords": [
-            "frappuccino de caramelo",
-            "caramel frapp",
-            "frap caramelo"
-          ]
-        }
-      ],
-      "te": [
-        {
-          "id": "chai_tea",
-          "nombre": "Chai Tea Latte",
-          "categoria": "te",
-          "tamaños": [
-            "tall",
-            "grande",
-            "venti"
+          "crema": [
+            "con",
+            "sin"
           ],
-          "precios": {
-            "tall": 700,
-            "grande": 800,
-            "venti": 900
-          },
-          "personalizaciones": {
-            "leche": [
-              "entera",
-              "descremada",
-              "almendra",
-              "soya"
-            ],
-            "temperatura": [
-              "caliente",
-              "helado"
-            ]
-          },
-          "precios_personalizacion": {
-            "leche_almendra": 100,
-            "leche_soya": 100
-          },
-          "keywords": [
-            "chai",
-            "chai latte",
-            "te chai",
-            "chai tea"
+          "syrups": [
+            "chocolate extra",
+            "caramelo"
           ]
         },
-        {
-          "id": "green_tea",
-          "nombre": "Green Tea Latte",
-          "categoria": "te",
-          "tamaños": [
-            "tall",
-            "grande",
-            "venti"
+        "precios_personalizacion": {
+          "leche_almendra": 100,
+          "leche_soya": 100,
+          "syrup_extra": 100
+        },
+        "keywords": [
+          "mocha frappuccino",
+          "moka frappuccino",
+          "mocha frap",
+          "moka frap",
+          "frappuccino de mocha",
+          "frapuccino de moka",
+          "frap de mocha",
+          "frap de moka",
+          "mocha frappe",
+          "moka frappe",
+          "frappuccino chocolate",
+          "frapuchino chocolate",
+          "frap chocolate",
+          "frappe chocolate",
+          "mocha helado",
+          "moka helado",
+          "bebida helada de chocolate",
+          "chocolate frío",
+          "chocolate frio",
+          "mocha frío",
+          "mocha frio"
+        ]
+      },
+      {
+        "id": "caramel_frapp",
+        "nombre": "Caramel Frappuccino",
+        "categoria": "frapuccino",
+        "tamaños": [
+          "tall",
+          "grande",
+          "venti"
+        ],
+        "precios": {
+          "tall": 800,
+          "grande": 900,
+          "venti": 1000
+        },
+        "personalizaciones": {
+          "leche": [
+            "entera",
+            "descremada",
+            "almendra",
+            "soya"
           ],
-          "precios": {
-            "tall": 700,
-            "grande": 800,
-            "venti": 900
-          },
-          "personalizaciones": {
-            "leche": [
-              "entera",
-              "descremada",
-              "almendra",
-              "soya"
-            ],
-            "temperatura": [
-              "caliente",
-              "helado"
-            ]
-          },
-          "precios_personalizacion": {
-            "leche_almendra": 100,
-            "leche_soya": 100
-          },
-          "keywords": [
-            "te verde",
-            "matcha",
-            "matcha latte",
-            "green tea"
-          ]
-        }
-      ],
-      "chocolate": [
-        {
-          "id": "hot_chocolate",
-          "nombre": "Hot Chocolate",
-          "categoria": "chocolate",
-          "tamaños": [
-            "tall",
-            "grande",
-            "venti"
+          "crema": [
+            "con",
+            "sin"
           ],
-          "precios": {
-            "tall": 650,
-            "grande": 750,
-            "venti": 850
-          },
-          "personalizaciones": {
-            "leche": [
-              "entera",
-              "descremada",
-              "almendra",
-              "soya"
-            ],
-            "crema": [
-              "con",
-              "sin"
-            ],
-            "syrups": [
-              "vainilla",
-              "caramelo"
-            ]
-          },
-          "precios_personalizacion": {
-            "leche_almendra": 100,
-            "leche_soya": 100,
-            "syrup": 100
-          },
-          "keywords": [
-            "chocolate caliente",
-            "chocolatada",
-            "hot cocoa"
-          ]
-        }
-      ],
-      "refreshers": [
-        {
-          "id": "berry_refresher",
-          "nombre": "Berry Refresher",
-          "categoria": "refresher",
-          "tamaños": [
-            "tall",
-            "grande",
-            "venti"
-          ],
-          "precios": {
-            "tall": 700,
-            "grande": 800,
-            "venti": 900
-          },
-          "personalizaciones": {
-            "hielo": [
-              "normal",
-              "extra",
-              "poco"
-            ],
-            "frutas": [
-              "con",
-              "sin"
-            ]
-          },
-          "precios_personalizacion": {
-            "frutas_extra": 100
-          },
-          "keywords": [
-            "refresher de berries",
-            "berry drink",
-            "bebida de frutos rojos"
+          "topping": [
+            "caramelo extra",
+            "crunch"
           ]
         },
-        {
-          "id": "mango_refresher",
-          "nombre": "Mango Dragonfruit Refresher",
-          "categoria": "refresher",
-          "tamaños": [
-            "tall",
-            "grande",
-            "venti"
+        "precios_personalizacion": {
+          "leche_almendra": 100,
+          "leche_soya": 100,
+          "topping_extra": 100
+        },
+        "keywords": [
+          "caramel frappuccino",
+          "caramelo frappuccino",
+          "caramel frap",
+          "caramelo frap",
+          "frappuccino de caramelo",
+          "frapuccino de caramelo",
+          "frap de caramelo",
+          "frappe de caramelo",
+          "caramel frappe",
+          "caramelo frappe",
+          "frappuccino caramelo",
+          "frapuchino caramelo",
+          "frap caramelo",
+          "frappe caramelo",
+          "caramelo helado",
+          "dulce de leche helado",
+          "bebida helada de caramelo",
+          "caramelo frío",
+          "caramelo frio",
+          "frappé caramelo"
+        ]
+      }
+    ],
+    "te": [
+      {
+        "id": "chai_tea",
+        "nombre": "Chai Tea Latte",
+        "categoria": "te",
+        "tamaños": [
+          "tall",
+          "grande",
+          "venti"
+        ],
+        "precios": {
+          "tall": 700,
+          "grande": 800,
+          "venti": 900
+        },
+        "personalizaciones": {
+          "leche": [
+            "entera",
+            "descremada",
+            "almendra",
+            "soya"
           ],
-          "precios": {
-            "tall": 700,
-            "grande": 800,
-            "venti": 900
-          },
-          "personalizaciones": {
-            "hielo": [
-              "normal",
-              "extra",
-              "poco"
-            ],
-            "frutas": [
-              "con",
-              "sin"
-            ]
-          },
-          "precios_personalizacion": {
-            "frutas_extra": 100
-          },
-          "keywords": [
-            "refresher de mango",
-            "dragonfruit",
-            "mango drink"
-          ]
-        }
-      ]
-    },
-    "alimentos": {
-      "panaderia": [
-        {
-          "id": "croissant",
-          "nombre": "Croissant",
-          "categoria": "panaderia",
-          "tamaños": [
-            "individual"
-          ],
-          "precio": 500,
-          "personalizaciones": {
-            "temperatura": [
-              "caliente",
-              "ambiente"
-            ]
-          },
-          "keywords": [
-            "croissant",
-            "cruasan",
-            "medialuna",
-            "croisant"
+          "temperatura": [
+            "caliente",
+            "helado"
           ]
         },
-        {
-          "id": "muffin_arandanos",
-          "nombre": "Muffin de Arándanos",
-          "categoria": "panaderia",
-          "tamaños": [
-            "individual"
+        "precios_personalizacion": {
+          "leche_almendra": 100,
+          "leche_soya": 100
+        },
+        "keywords": [
+          "chai tea",
+          "chai latte",
+          "chai",
+          "té chai",
+          "te chai",
+          "chai tea latte",
+          "chai tea late",
+          "té con especies",
+          "te con especies",
+          "té especiado",
+          "te especiado",
+          "chai spice",
+          "spiced tea",
+          "té indio",
+          "te indio",
+          "té con leche especiado",
+          "te con leche especiado",
+          "chai tradicional",
+          "masala chai"
+        ]
+      },
+      {
+        "id": "green_tea",
+        "nombre": "Green Tea Latte",
+        "categoria": "te",
+        "tamaños": [
+          "tall",
+          "grande",
+          "venti"
+        ],
+        "precios": {
+          "tall": 700,
+          "grande": 800,
+          "venti": 900
+        },
+        "personalizaciones": {
+          "leche": [
+            "entera",
+            "descremada",
+            "almendra",
+            "soya"
           ],
-          "precio": 450,
-          "personalizaciones": {
-            "temperatura": [
-              "caliente",
-              "ambiente"
-            ]
-          },
-          "keywords": [
-            "muffin",
-            "magdalena",
-            "queque de arandanos",
-            "muffin arandanos"
-          ]
-        }
-      ],
-      "sandwiches": [
-        {
-          "id": "sandwich_jamon_queso",
-          "nombre": "Sándwich de Jamón y Queso",
-          "categoria": "sandwiches",
-          "tamaños": [
-            "individual"
-          ],
-          "precio": 800,
-          "personalizaciones": {
-            "temperatura": [
-              "caliente",
-              "frío"
-            ],
-            "pan": [
-              "blanco",
-              "integral"
-            ]
-          },
-          "keywords": [
-            "sandwich jamon",
-            "sandwich queso",
-            "tostado jamon y queso"
+          "temperatura": [
+            "caliente",
+            "helado"
           ]
         },
-        {
-          "id": "sandwich_pollo",
-          "nombre": "Sándwich de Pollo",
-          "categoria": "sandwiches",
-          "tamaños": [
-            "individual"
+        "precios_personalizacion": {
+          "leche_almendra": 100,
+          "leche_soya": 100
+        },
+        "keywords": [
+          "green tea",
+          "té verde",
+          "te verde",
+          "green tea latte",
+          "té verde latte",
+          "te verde latte",
+          "matcha",
+          "matcha latte",
+          "macha latte",
+          "té matcha",
+          "te matcha",
+          "té verde con leche",
+          "te verde con leche",
+          "matcha tradicional",
+          "match",
+          "green tea tradicional",
+          "té verde tradicional",
+          "te verde tradicional",
+          "bebida verde"
+        ]
+      }
+    ],
+    "chocolate": [
+      {
+        "id": "hot_chocolate",
+        "nombre": "Hot Chocolate",
+        "categoria": "chocolate",
+        "tamaños": [
+          "tall",
+          "grande",
+          "venti"
+        ],
+        "precios": {
+          "tall": 650,
+          "grande": 750,
+          "venti": 850
+        },
+        "personalizaciones": {
+          "leche": [
+            "entera",
+            "descremada",
+            "almendra",
+            "soya"
           ],
-          "precio": 850,
-          "personalizaciones": {
-            "temperatura": [
-              "caliente",
-              "frío"
-            ],
-            "pan": [
-              "blanco",
-              "integral"
-            ]
-          },
-          "keywords": [
-            "sandwich de pollo",
-            "chicken sandwich",
-            "sandwich pollo"
-          ]
-        }
-      ],
-      "postres": [
-        {
-          "id": "cheesecake",
-          "nombre": "Cheesecake New York",
-          "categoria": "postres",
-          "tamaños": [
-            "porcion"
+          "crema": [
+            "con",
+            "sin"
           ],
-          "precio": 700,
-          "personalizaciones": {
-            "temperatura": [
-              "frío",
-              "ambiente"
-            ],
-            "salsa": [
-              "frutos rojos",
-              "caramelo"
-            ]
-          },
-          "precios_personalizacion": {
-            "salsa_extra": 100
-          },
-          "keywords": [
-            "cheesecake",
-            "torta de queso",
-            "tarta de queso"
+          "syrups": [
+            "vainilla",
+            "caramelo"
           ]
         },
-        {
-          "id": "brownie",
-          "nombre": "Brownie de Chocolate",
-          "categoria": "postres",
-          "tamaños": [
-            "individual"
+        "precios_personalizacion": {
+          "leche_almendra": 100,
+          "leche_soya": 100,
+          "syrup": 100
+        },
+        "keywords": [
+          "hot chocolate",
+          "chocolate caliente",
+          "chocolatada",
+          "chocolateada",
+          "chocolate con leche",
+          "choco",
+          "chocolate",
+          "cocoa",
+          "cacao",
+          "submarino",
+          "chocolate submarino",
+          "chocolate tradicional",
+          "bebida chocolate",
+          "hot cocoa",
+          "chocolate drink",
+          "chocolate calentito",
+          "chocolate con crema"
+        ]
+      }
+    ],
+    "refreshers": [
+      {
+        "id": "berry_refresher",
+        "nombre": "Berry Refresher",
+        "categoria": "refresher",
+        "tamaños": [
+          "tall",
+          "grande",
+          "venti"
+        ],
+        "precios": {
+          "tall": 700,
+          "grande": 800,
+          "venti": 900
+        },
+        "personalizaciones": {
+          "hielo": [
+            "normal",
+            "extra",
+            "poco"
           ],
-          "precio": 600,
-          "personalizaciones": {
-            "temperatura": [
-              "caliente",
-              "ambiente"
-            ],
-            "topping": [
-              "helado",
-              "crema"
-            ]
-          },
-          "precios_personalizacion": {
-            "topping": 150
-          },
-          "keywords": [
-            "brownie",
-            "brownie chocolate",
-            "postre chocolate"
-          ]
-        }
-      ],
-      "snacks": [
-        {
-          "id": "cookies",
-          "nombre": "Cookies con Chips de Chocolate",
-          "categoria": "snacks",
-          "tamaños": [
-            "individual",
-            "pack_3"
-          ],
-          "precios": {
-            "individual": 300,
-            "pack_3": 800
-          },
-          "personalizaciones": {
-            "temperatura": [
-              "caliente",
-              "ambiente"
-            ]
-          },
-          "keywords": [
-            "cookies",
-            "galletas",
-            "galletas chocolate"
+          "frutas": [
+            "con",
+            "sin"
           ]
         },
-        {
-          "id": "bagel",
-          "nombre": "Bagel",
-          "categoria": "snacks",
-          "tamaños": [
-            "individual"
+        "precios_personalizacion": {
+          "frutas_extra": 100
+        },
+        "keywords": [
+          "berry refresher",
+          "refresher de berries",
+          "bebida de berries",
+          "berries refresher",
+          "frutos rojos",
+          "berry drink",
+          "bebida de frutos rojos",
+          "refresco de berries",
+          "jugo de berries",
+          "berry juice",
+          "berry",
+          "berries",
+          "bebida refrescante de berries",
+          "refresco frutal",
+          "bebida frutal",
+          "frutas rojas",
+          "refresh berries",
+          "refrescante de berries"
+        ]
+      },
+      {
+        "id": "mango_refresher",
+        "nombre": "Mango Dragonfruit Refresher",
+        "categoria": "refresher",
+        "tamaños": [
+          "tall",
+          "grande",
+          "venti"
+        ],
+        "precios": {
+          "tall": 700,
+          "grande": 800,
+          "venti": 900
+        },
+        "personalizaciones": {
+          "hielo": [
+            "normal",
+            "extra",
+            "poco"
           ],
-          "precio": 400,
-          "personalizaciones": {
-            "temperatura": [
-              "caliente",
-              "ambiente"
-            ],
-            "spread": [
-              "queso crema",
-              "manteca"
-            ]
-          },
-          "precios_personalizacion": {
-            "spread": 100
-          },
-          "keywords": [
-            "bagel",
-            "pan bagel",
-            "rosca"
-          ]
-        }
-      ],
-      "ensaladas": [
-        {
-          "id": "ensalada_cesar",
-          "nombre": "Ensalada César",
-          "categoria": "ensaladas",
-          "tamaños": [
-            "individual"
-          ],
-          "precio": 900,
-          "personalizaciones": {
-            "proteina": [
-              "pollo",
-              "sin pollo"
-            ],
-            "aderezo": [
-              "normal",
-              "extra",
-              "sin"
-            ]
-          },
-          "precios_personalizacion": {
-            "aderezo_extra": 100
-          },
-          "keywords": [
-            "ensalada cesar",
-            "cesar salad",
-            "ensalada pollo"
+          "frutas": [
+            "con",
+            "sin"
           ]
         },
-        {
-          "id": "ensalada_mediterranea",
-          "nombre": "Ensalada Mediterránea",
-          "categoria": "ensaladas",
-          "tamaños": [
-            "individual"
-          ],
-          "precio": 850,
-          "personalizaciones": {
-            "aceitunas": [
-              "con",
-              "sin"
-            ],
-            "aderezo": [
-              "normal",
-              "extra",
-              "sin"
-            ]
-          },
-          "precios_personalizacion": {
-            "aderezo_extra": 100
-          },
-          "keywords": [
-            "ensalada mediterranea",
-            "mediterranea",
-            "ensalada vegetariana"
+        "precios_personalizacion": {
+          "frutas_extra": 100
+        },
+        "keywords": [
+          "mango refresher",
+          "dragonfruit refresher",
+          "mango dragonfruit",
+          "dragon fruit",
+          "bebida de mango",
+          "refresco de mango",
+          "mango drink",
+          "dragonfruit drink",
+          "pitaya",
+          "bebida de pitaya",
+          "refresco tropical",
+          "tropical refresher",
+          "mango tropical",
+          "dragon mango",
+          "bebida refrescante de mango",
+          "refresco de pitaya",
+          "mango y pitaya",
+          "mango y dragonfruit",
+          "refresher tropical",
+          "bebida de frutas tropicales"
+        ]
+      }
+    ]
+  },
+  "alimentos": {
+    "panaderia": [
+      {
+        "id": "croissant",
+        "nombre": "Croissant",
+        "categoria": "panaderia",
+        "tamaños": [
+          "individual"
+        ],
+        "precio": 500,
+        "personalizaciones": {
+          "temperatura": [
+            "caliente",
+            "ambiente"
           ]
-        }
-      ]
-    }
+        },
+        "keywords": [
+          "croissant",
+          "cruasán",
+          "croasan",
+          "croisant",
+          "cruasant",
+          "croasant",
+          "medialuna",
+          "medialunas",
+          "medialuna francesa",
+          "medialuna manteca",
+          "croisante",
+          "cruasante",
+          "pan medialuna",
+          "pan francés",
+          "factura medialuna",
+          "factura francesa",
+          "croissant manteca",
+          "cruasan manteca",
+          "medialuna de manteca",
+          "medialuna tradicional",
+          "pan de manteca"
+        ]
+      },
+      {
+        "id": "muffin_arandanos",
+        "nombre": "Muffin de Arándanos",
+        "categoria": "panaderia",
+        "tamaños": [
+          "individual"
+        ],
+        "precio": 450,
+        "personalizaciones": {
+          "temperatura": [
+            "caliente",
+            "ambiente"
+          ]
+        },
+        "keywords": [
+          "muffin",
+          "mufin",
+          "moffin",
+          "magdalena",
+          "magdalenas",
+          "queque",
+          "keke",
+          "muffin arándanos",
+          "muffin arandanos",
+          "magdalena arándanos",
+          "magdalena arandanos",
+          "queque arándanos",
+          "queque arandanos",
+          "panquecito arándanos",
+          "panquecito arandanos",
+          "cupcake arándanos",
+          "cupcake arandanos",
+          "muffin blueberry",
+          "mufin blueberry",
+          "magdalena frutos rojos",
+          "queque frutos rojos",
+          "panecillo arándanos",
+          "bollito arándanos",
+          "muffin frutal",
+          "magdalena frutal"
+        ]
+      }
+    ],
+    "sandwiches": [
+      {
+        "id": "sandwich_jamon_queso",
+        "nombre": "Sándwich de Jamón y Queso",
+        "categoria": "sandwiches",
+        "tamaños": [
+          "individual"
+        ],
+        "precio": 800,
+        "personalizaciones": {
+          "temperatura": [
+            "caliente",
+            "frío"
+          ],
+          "pan": [
+            "blanco",
+            "integral"
+          ]
+        },
+        "keywords": [
+          "sandwich jamón y queso",
+          "sandwich jamon y queso",
+          "sándwich jamón queso",
+          "sandwich jamon queso",
+          "tostado jamón y queso",
+          "tostado jamon y queso",
+          "mixto",
+          "sandwich mixto",
+          "sándwich mixto",
+          "tostado mixto",
+          "tostado",
+          "sandwich caliente",
+          "sándwich caliente",
+          "croque monsieur",
+          "sandwich tradicional",
+          "sandwich de jamón",
+          "sandwich de jamon",
+          "tostado de jamón",
+          "tostado de jamon",
+          "pan con jamón y queso",
+          "pan jamon queso",
+          "sandwich clásico",
+          "sandwich clasico"
+        ]
+      },
+      {
+        "id": "sandwich_pollo",
+        "nombre": "Sándwich de Pollo",
+        "categoria": "sandwiches",
+        "tamaños": [
+          "individual"
+        ],
+        "precio": 850,
+        "personalizaciones": {
+          "temperatura": [
+            "caliente",
+            "frío"
+          ],
+          "pan": [
+            "blanco",
+            "integral"
+          ]
+        },
+        "keywords": [
+          "sandwich de pollo",
+          "sándwich de pollo",
+          "sandwich pollo",
+          "sándwich pollo",
+          "chicken sandwich",
+          "pollo sandwich",
+          "sandwich de ave",
+          "sándwich de ave",
+          "sandwich chicken",
+          "sándwich chicken",
+          "tostado de pollo",
+          "tostado pollo",
+          "pan con pollo",
+          "sandwich de pechuga",
+          "sándwich de pechuga",
+          "sandwich pechuga",
+          "tostado pechuga",
+          "sandwich ave",
+          "sandwich pollo caliente",
+          "sandwich pollo frio",
+          "sandwich de pollo grillado",
+          "sandwich pollo grillé"
+        ]
+      }
+    ],
+    "postres": [
+      {
+        "id": "cheesecake",
+        "nombre": "Cheesecake New York",
+        "categoria": "postres",
+        "tamaños": [
+          "porcion"
+        ],
+        "precio": 700,
+        "personalizaciones": {
+          "temperatura": [
+            "frío",
+            "ambiente"
+          ],
+          "salsa": [
+            "frutos rojos",
+            "caramelo"
+          ]
+        },
+        "precios_personalizacion": {
+          "salsa_extra": 100
+        },
+        "keywords": [
+          "cheesecake",
+          "cheese cake",
+          "chesscake",
+          "torta de queso",
+          "tarta de queso",
+          "pay de queso",
+          "pastel de queso",
+          "cheesecake new york",
+          "cheese cake ny",
+          "torta queso",
+          "tarta queso",
+          "postre de queso",
+          "cheese pie",
+          "new york cheesecake",
+          "ny style cheesecake",
+          "tarta queso nueva york",
+          "torta queso americana",
+          "postre philadelphia",
+          "tarta philadelphia",
+          "cheesecake clasico",
+          "cheesecake clásico",
+          "postre de queso crema"
+        ]
+      },
+      {
+        "id": "brownie",
+        "nombre": "Brownie de Chocolate",
+        "categoria": "postres",
+        "tamaños": [
+          "individual"
+        ],
+        "precio": 600,
+        "personalizaciones": {
+          "temperatura": [
+            "caliente",
+            "ambiente"
+          ],
+          "topping": [
+            "helado",
+            "crema"
+          ]
+        },
+        "precios_personalizacion": {
+          "topping": 150
+        },
+        "keywords": [
+          "brownie",
+          "browni",
+          "brownies",
+          "brownie chocolate",
+          "brownie de chocolate",
+          "brownie caliente",
+          "brownie tibio",
+          "postre chocolate",
+          "postre brownie",
+          "brownie con helado",
+          "brownie helado",
+          "brownie con crema",
+          "brownie americano",
+          "brownie tradicional",
+          "brownie clasico",
+          "brownie casero",
+          "brownie negro",
+          "chocolate brownie",
+          "postre chocolate caliente",
+          "brownie con nueces",
+          "brownie nuez"
+        ]
+      }
+    ],
+    "snacks": [
+      {
+        "id": "cookies",
+        "nombre": "Cookies con Chips de Chocolate",
+        "categoria": "snacks",
+        "tamaños": [
+          "individual",
+          "pack_3"
+        ],
+        "precios": {
+          "individual": 300,
+          "pack_3": 800
+        },
+        "personalizaciones": {
+          "temperatura": [
+            "caliente",
+            "ambiente"
+          ]
+        },
+        "keywords": [
+          "cookies",
+          "cookie",
+          "galletas",
+          "galletas chocolate",
+          "galletas con chocolate",
+          "chocolate chip cookies",
+          "chocolate chips",
+          "galletas con chips",
+          "cookies chocolate",
+          "cookies americanas",
+          "galletas americanas",
+          "cookies choco",
+          "galletas choco",
+          "cookies tradicionales",
+          "galletas tradicionales",
+          "cookies caseras",
+          "galletas caseras",
+          "galletas con gotitas",
+          "cookies con gotitas",
+          "cookies chip",
+          "galletas chip"
+        ]
+      },
+      {
+        "id": "bagel",
+        "nombre": "Bagel",
+        "categoria": "snacks",
+        "tamaños": [
+          "individual"
+        ],
+        "precio": 400,
+        "personalizaciones": {
+          "temperatura": [
+            "caliente",
+            "ambiente"
+          ],
+          "spread": [
+            "queso crema",
+            "manteca"
+          ]
+        },
+        "precios_personalizacion": {
+          "spread": 100
+        },
+        "keywords": [
+          "bagel",
+          "bagle",
+          "beagle",
+          "pan bagel",
+          "rosca",
+          "rosquita",
+          "bagel tradicional",
+          "bagel clasico",
+          "bagel con queso",
+          "bagel queso crema",
+          "bagel philadelphia",
+          "bagel con philadelphia",
+          "bagel con manteca",
+          "bagel mantequilla",
+          "pan rosca",
+          "pan americana",
+          "rosca americana",
+          "bagel americano",
+          "pan redondo",
+          "pan de rosca",
+          "bagel new york",
+          "bagel ny"
+        ]
+      }
+    ],
+    "ensaladas": [
+      {
+        "id": "ensalada_cesar",
+        "nombre": "Ensalada César",
+        "categoria": "ensaladas",
+        "tamaños": [
+          "individual"
+        ],
+        "precio": 900,
+        "personalizaciones": {
+          "proteina": [
+            "pollo",
+            "sin pollo"
+          ],
+          "aderezo": [
+            "normal",
+            "extra",
+            "sin"
+          ]
+        },
+        "precios_personalizacion": {
+          "aderezo_extra": 100
+        },
+        "keywords": [
+          "ensalada césar",
+          "ensalada cesar",
+          "cesar salad",
+          "caesar salad",
+          "ensalada de pollo",
+          "ensalada pollo",
+          "chicken caesar",
+          "cesar con pollo",
+          "ensalada romana",
+          "ensalada clásica",
+          "ensalada clasica",
+          "cesar clásica",
+          "cesar tradicional",
+          "ensalada tradicional",
+          "ensalada con crutones",
+          "caesar tradicional",
+          "ensalada con pollo",
+          "cesar chicken",
+          "ensalada crutones",
+          "ensalada caesar"
+        ]
+      },
+      {
+        "id": "ensalada_mediterranea",
+        "nombre": "Ensalada Mediterránea",
+        "categoria": "ensaladas",
+        "tamaños": [
+          "individual"
+        ],
+        "precio": 850,
+        "personalizaciones": {
+          "aceitunas": [
+            "con",
+            "sin"
+          ],
+          "aderezo": [
+            "normal",
+            "extra",
+            "sin"
+          ]
+        },
+        "precios_personalizacion": {
+          "aderezo_extra": 100
+        },
+        "keywords": [
+          "ensalada mediterránea",
+          "ensalada mediterranea",
+          "mediterranea",
+          "mediterranean salad",
+          "ensalada griega",
+          "greek salad",
+          "ensalada de aceitunas",
+          "ensalada veggie",
+          "ensalada vegetariana",
+          "ensalada verde",
+          "ensalada mix",
+          "ensalada mixta",
+          "ensalada fresca",
+          "ensalada light",
+          "ensalada saludable",
+          "ensalada fitness",
+          "ensalada de verduras",
+          "ensalada tradicional",
+          "ensalada mediterránea mixta",
+          "mediterránea completa",
+          "mediterranea completa"
+        ]
+      }
+    ]
   }
+}
