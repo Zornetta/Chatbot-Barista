@@ -101,9 +101,9 @@ class ChatbotService:
 
         except Exception as e:
             print(f"Error en process_message: {str(e)}")
-            return Response(
-                text="Lo siento, tuve un problema procesando tu mensaje. ¿Podrías reformularlo?",
-                suggested_actions=["Ver menú", "Empezar de nuevo"]
+            return self._create_response_with_order(
+                "Lo siento, tuve un problema procesando tu mensaje. ¿Podrías reformularlo?",
+                ["Ver menú", "Empezar de nuevo"]
             )
 
     def handle_intent(self, intent: str, entities: ExtractedEntities) -> Response:
@@ -272,14 +272,9 @@ class ChatbotService:
     def _handle_menu_intent(self, intent: str = None, entities: ExtractedEntities = None) -> Response:
         """Maneja la intención de consultar el menú"""
         menu_text = self._format_menu_summary()
-        return Response(
-            text=f"Este es nuestro menú:\n{menu_text}\n\n¿Qué te gustaría hacer?",
-            suggested_actions=[
-                "Ordenar algo",
-                "Consultar precios",
-                "Ver bebidas",
-                "Ver alimentos"
-            ]
+        return self._create_response_with_order(
+            f"Este es nuestro menú:\n{menu_text}\n\n¿Qué te gustaría hacer?",
+            ["Ordenar algo", "Consultar precios", "Ver bebidas", "Ver alimentos"]
         )
 
     def _handle_customization_intent(self, entities: ExtractedEntities) -> Response:
@@ -300,9 +295,9 @@ class ChatbotService:
             for option, price in options.items():
                 customization_text += f"\n- {option.capitalize()}: +${price:.2f}"
 
-        return Response(
-            text=customization_text,
-            suggested_actions=["Ver bebidas", "Hacer un pedido"]
+        return self._create_response_with_order(
+            customization_text,
+            ["Ver bebidas", "Hacer un pedido"]
         )
 
     def _handle_order_confirmation(self, intent: str = None, entities: ExtractedEntities = None) -> Response:
@@ -335,9 +330,9 @@ class ChatbotService:
 
     def _handle_unknown_intent(self, entities: Optional[ExtractedEntities] = None) -> Response:
         """Maneja intenciones no reconocidas"""
-        return Response(
-            text="No estoy seguro de lo que quieres hacer. ¿Podrías ser más específico?",
-            suggested_actions=["Ver menú", "Hacer pedido", "Ver precios"]
+        return self._create_response_with_order(
+            "No estoy seguro de lo que quieres hacer. ¿Podrías ser más específico?",
+            ["Ver menú", "Hacer pedido", "Ver precios"]
         )
 
     def _handle_intent_confirmation(self, text: str) -> Response:
@@ -492,23 +487,42 @@ class ChatbotService:
             product = self.menu_repo.search_food_item(drink_entities.alimento)
 
         if product:
-            # Mostrar precio y ofrecer compra
             prices_text = self._format_prices(product)
-            return Response(
-                text=f"Los precios para {product.name} son:\n{prices_text}\n\n¿Te gustaría ordenarlo?",
-                suggested_actions=[
-                    f"Ordenar {product.name}",
-                    "Consultar otro precio",
-                    "Ver menú completo"
-                ]
+            return self._create_response_with_order(
+                f"Los precios para {product.name} son:\n{prices_text}\n\n¿Te gustaría ordenarlo?",
+                [f"Ordenar {product.name}", "Consultar otro precio", "Ver menú completo"]
             )
         else:
-            # No se identificó producto, pedir especificación
-            return Response(
-                text="¿De qué producto te gustaría saber el precio?",
-                suggested_actions=[
-                    "Ver bebidas disponibles",
-                    "Ver alimentos disponibles",
-                    "Ver menú completo"
-                ]
+            return self._create_response_with_order(
+                "¿De qué producto te gustaría saber el precio?",
+                ["Ver bebidas disponibles", "Ver alimentos disponibles", "Ver menú completo"]
             )
+
+    def _format_current_order_summary(self) -> str:
+        """Formatea un resumen del estado actual de la orden"""
+        if not self.conversation_state.current_order or not self.conversation_state.current_order.items:
+            return ""
+
+        summary = "\nTu orden actual:"
+        for item in self.conversation_state.current_order.items:
+            line = f"\n- {item.menu_item.name} ({item.size})"
+            if item.customizations:
+                line += f" con {', '.join(item.customizations)}"
+            summary += line
+
+        total = self.price_calculator.calculate_order_total(self.conversation_state.current_order.items)
+        summary += f"\nTotal: ${total:.2f}"
+
+        return summary
+
+    def _create_response_with_order(self, text: str, suggested_actions: List[str]) -> Response:
+        """Crea una respuesta incluyendo el estado actual de la orden"""
+        order_summary = self._format_current_order_summary()
+        if order_summary:
+            text = f"{text}\n{order_summary}"
+
+        return Response(
+            text=text,
+            suggested_actions=suggested_actions,
+            order=self.conversation_state.current_order
+        )
