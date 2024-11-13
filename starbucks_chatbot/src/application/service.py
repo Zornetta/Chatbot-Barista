@@ -8,6 +8,7 @@ from src.infrastructure.nlp_processor import NLPProcessor, ExtractedEntities
 from src.infrastructure.classifier import IntentClassifier
 from src.domain.models import Order, OrderItem, MenuItem
 from src.application.models import Response
+from src.domain.pricing.price_calculator import PriceCalculator, PriceBreakdown
 
 class InteractionMode(Enum):
     PURCHASE = "purchase"  # Modo compra
@@ -53,6 +54,8 @@ class ChatbotService:
             "preguntar_precio": "consultar precios",
             "consultar_menu": "ver el menú"
         }
+
+        self.price_calculator = PriceCalculator()
 
         # # Intenciones que no necesitan confirmación
         # self.direct_intents = {
@@ -140,52 +143,62 @@ class ChatbotService:
     def _handle_order_intent(self, entities: ExtractedEntities) -> Response:
         """Maneja la intención de ordenar una bebida"""
         try:
-            # Debug: Imprimir estado al manejar orden
-            print(f"\nManejando orden:")
-            print(f"- Entidades recibidas: {entities}")
-
-            if not self.conversation_state.current_order:
-                self.conversation_state.current_order = Order()
-
             if entities and entities.bebida:
-                print(f"- Buscando bebida: {entities.bebida}")
                 item = self.menu_repo.search_item(entities.bebida)
-                print(f"- Item encontrado: {item}")
-
                 if item:
+                    # Mostrar primero los precios disponibles si no se especificó tamaño
+                    if not entities.tamaño:
+                        price_options = self.price_calculator.format_price_options(item)
+                        return Response(
+                            text=f"Encontré {item.name}. {price_options}\n\n¿Qué tamaño prefieres?",
+                            suggested_actions=item.sizes,
+                            order=self.conversation_state.current_order
+                        )
+
+                    # Si hay tamaño, crear el item y mostrar precio
                     order_item = OrderItem(
                         menu_item=item,
-                        size=entities.tamaño or "grande",
+                        size=entities.tamaño,
                         customizations=entities.personalizaciones or []
                     )
+
+                    # Calcular desglose de precios
+                    price_breakdown = self.price_calculator.calculate_item_price(order_item)
+
+                    # Agregar a la orden si existe
+                    if not self.conversation_state.current_order:
+                        self.conversation_state.current_order = Order()
                     self.conversation_state.current_order.add_item(order_item)
 
-                    print(f"- Item agregado a la orden: {order_item.menu_item.name}")
+                    # Preparar mensaje con desglose de precios
+                    price_text = f"\nPrecio base: ${price_breakdown.base_price:.2f}"
+                    if price_breakdown.customization_prices:
+                        price_text += "\nPersonalizaciones:"
+                        for custom, price in price_breakdown.customization_prices.items():
+                            price_text += f"\n- {custom}: +${price:.2f}"
+                    price_text += f"\nTotal: ${price_breakdown.total:.2f}"
 
-                    suggested_actions = ["Confirmar orden", "Agregar más", "Ver orden actual"]
+                    text = f"He agregado un {item.name} {order_item.size}"
                     if entities.personalizaciones:
-                        text = f"He agregado un {item.name} {order_item.size} con {', '.join(entities.personalizaciones)}. "
-                    else:
-                        text = f"He agregado un {item.name} {order_item.size}. "
-
-                    text += "¿Deseas agregar algo más?"
+                        text += f" con {', '.join(entities.personalizaciones)}"
+                    text += f".{price_text}\n\n¿Deseas agregar algo más?"
 
                     return Response(
                         text=text,
-                        suggested_actions=suggested_actions,
+                        suggested_actions=["Ver personalizaciones", "Confirmar orden", "Agregar más"],
                         order=self.conversation_state.current_order
                     )
-                else:
-                    print(f"- No se encontró la bebida en el menú")
-                    return Response(
-                        text="Lo siento, no encontré esa bebida en nuestro menú. ¿Te gustaría ver las opciones disponibles?",
-                        suggested_actions=["Ver menú", "Ver bebidas populares"]
-                    )
 
-            print(f"- No se proporcionó bebida en las entidades")
             return Response(
-                text="¿Qué bebida te gustaría ordenar?",
+                text="¿Qué bebida te gustaría ordenar? Puedo mostrarte nuestro menú con precios.",
                 suggested_actions=["Ver menú", "Ver bebidas populares"]
+            )
+
+        except Exception as e:
+            print(f"Error en _handle_order_intent: {str(e)}")
+            return Response(
+                text="Lo siento, ocurrió un error al procesar tu orden. ¿Podrías intentarlo de nuevo?",
+                suggested_actions=["Ver menú", "Empezar de nuevo"]
             )
 
         except Exception as e:
@@ -287,15 +300,21 @@ class ChatbotService:
         if entities.bebida:
             item = self.menu_repo.search_item(entities.bebida)
             if item:
-                customization_text = self._format_customizations(item)
+                customization_text = self.price_calculator.format_price_options(item)
                 return Response(
-                    text=customization_text,
+                    text=f"Estas son las opciones para {item.name}:\n{customization_text}",
                     suggested_actions=["Ordenar bebida", "Ver otras opciones"]
                 )
 
+        # Mostrar opciones generales con precios
+        customization_text = "Opciones de personalización disponibles:\n"
+        for category, options in self.price_calculator.customization_prices.items():
+            customization_text += f"\n{category.capitalize()}:"
+            for option, price in options.items():
+                customization_text += f"\n- {option.capitalize()}: +${price:.2f}"
+
         return Response(
-            text="Estas son nuestras opciones de personalización generales:\n" +
-                 self._format_general_customizations(),
+            text=customization_text,
             suggested_actions=["Ver bebidas", "Hacer un pedido"]
         )
 
@@ -440,15 +459,27 @@ class ChatbotService:
                "- Jarabes: vainilla, caramelo, avellana"
 
     def _format_order_summary(self, order: Order) -> str:
-        """Formatea un resumen de la orden"""
+        """Formatea un resumen de la orden con desglose de precios"""
         summary = []
         for item in order.items:
+            breakdown = self.price_calculator.calculate_item_price(item)
+
             item_text = f"- {item.menu_item.name} ({item.size})"
             if item.customizations:
                 item_text += f" con {', '.join(item.customizations)}"
+
+            # Agregar desglose de precios
+            item_text += f"\n  Base: ${breakdown.base_price:.2f}"
+            for custom, price in breakdown.customization_prices.items():
+                item_text += f"\n  {custom}: +${price:.2f}"
+            item_text += f"\n  Subtotal: ${breakdown.total:.2f}"
+
             summary.append(item_text)
 
-        summary.append(f"\nTotal: ${order.total:.2f}")
+        # Agregar total general
+        total = self.price_calculator.calculate_order_total(order.items)
+        summary.append(f"\nTotal Final: ${total:.2f}")
+
         return "\n".join(summary)
 
     def _handle_price_query(self, text: str, entities: ExtractedEntities) -> Response:
