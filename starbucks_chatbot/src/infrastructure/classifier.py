@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
+import time
+from functools import wraps
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple, Optional, Callable, TypeVar, Any
 import numpy as np
 from dataclasses import dataclass
 from pathlib import Path
@@ -12,6 +14,40 @@ import joblib
 
 from src.domain.models import Intent
 from src.infrastructure.nlp_processor import NLPProcessor
+
+T = TypeVar('T')
+
+def retry_with_backoff(retries: int = 3, backoff_in_seconds: int = 1):
+    """
+    Decorador que implementa reintentos con backoff exponencial
+
+    Args:
+        retries: Número de reintentos
+        backoff_in_seconds: Tiempo base de espera entre reintentos
+
+    Returns:
+        Wrapper function
+    """
+    def decorator(operation: Callable[..., T]) -> Callable[..., T]:
+        @wraps(operation)
+        def wrapper(*args, **kwargs) -> T:
+            last_exception = None
+            for attempt in range(retries + 1):  # +1 para incluir el intento original
+                try:
+                    return operation(*args, **kwargs)
+                except Exception as e:
+                    last_exception = e
+                    if attempt == retries:  # Si es el último intento, propagar el error
+                        raise RuntimeError(
+                            f"Error después de {retries + 1} intentos. "
+                            f"Último error: {str(last_exception)}"
+                        )
+                    # Calcular tiempo de espera exponencial
+                    wait_time = backoff_in_seconds * (2 ** attempt)
+                    time.sleep(wait_time)
+            raise last_exception  # Por si acaso, nunca deberíamos llegar aquí
+        return wrapper
+    return decorator
 
 @dataclass
 class ClassificationMetrics:
@@ -57,15 +93,16 @@ class IntentClassifier:
             ))
         ])
 
+    @retry_with_backoff(retries=3, backoff_in_seconds=1)
     def _load_model(self, path: str) -> None:
         """
-        Carga un modelo guardado
+        Carga un modelo guardado con reintentos
 
         Args:
             path: Ruta al modelo
 
         Raises:
-            RuntimeError: Si hay error al cargar el modelo
+            RuntimeError: Si hay error al cargar el modelo después de todos los reintentos
         """
         try:
             model_data = joblib.load(path)
@@ -154,9 +191,10 @@ class IntentClassifier:
         except Exception as e:
             raise RuntimeError(f"Error durante el entrenamiento: {str(e)}")
 
+    @retry_with_backoff(retries=3, backoff_in_seconds=1)
     def predict(self, text: str) -> Tuple[str, float]:
         """
-        Predice la intención para un texto dado
+        Predice la intención para un texto dado con reintentos
 
         Args:
             text: Texto de entrada
@@ -165,7 +203,8 @@ class IntentClassifier:
             Tupla de (intención predicha, confianza)
 
         Raises:
-            RuntimeError: Si el modelo no está entrenado o no se ha cargado correctamente
+            RuntimeError: Si el modelo no está entrenado o hay error en la predicción
+            después de todos los reintentos
         """
         if not hasattr(self.model, 'predict') or not self.intent_labels:
             raise RuntimeError("El modelo no está entrenado o no se ha cargado correctamente")
@@ -179,7 +218,6 @@ class IntentClassifier:
             intent = self.model.predict(features)[0]
 
             # Obtener confianza (distancia al hiperplano)
-            # Convertir el array de decisión a un escalar Python
             decision_values = self.model.decision_function(features)
             confidence = float(np.abs(decision_values).max())
 
