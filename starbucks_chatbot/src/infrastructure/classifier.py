@@ -32,7 +32,19 @@ class IntentClassifier:
         self.processor = processor
         self.model = self._create_pipeline()
         self.intent_labels: List[str] = []
-        self._load_model(model_path) if model_path else None
+
+        # Cargar modelo si se proporciona ruta
+        if model_path:
+            self._load_model(model_path)
+        else:
+            # Buscar modelo en ubicación por defecto
+            try:
+                default_path = Path(__file__).parent.parent.parent / "models" / "classifier.joblib"
+                if default_path.exists():
+                    self._load_model(str(default_path))
+            except Exception:
+                # Si no se encuentra el modelo por defecto, se iniciará sin modelo
+                pass
 
     def _create_pipeline(self) -> Pipeline:
         """Crea el pipeline de clasificación"""
@@ -57,10 +69,17 @@ class IntentClassifier:
         """
         try:
             model_data = joblib.load(path)
-            self.model = model_data['model']
-            self.intent_labels = model_data['labels']
+            if isinstance(model_data, dict):
+                self.model = model_data.get('model')
+                self.intent_labels = model_data.get('labels', [])
+            else:
+                # Compatibilidad con versiones anteriores donde solo se guardaba el modelo
+                self.model = model_data
+                # Intentar inferir las etiquetas desde el modelo
+                if hasattr(self.model, 'classes_'):
+                    self.intent_labels = list(self.model.classes_)
         except Exception as e:
-            raise RuntimeError(f"Error al cargar el modelo: {str(e)}")
+            raise RuntimeError(f"Error al cargar el modelo desde {path}: {str(e)}")
 
     def save_model(self, path: str) -> None:
         """
@@ -72,6 +91,9 @@ class IntentClassifier:
         Raises:
             RuntimeError: Si hay error al guardar el modelo
         """
+        if not self.model or not self.intent_labels:
+            raise RuntimeError("No hay modelo entrenado para guardar")
+
         try:
             path = Path(path)
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -82,7 +104,7 @@ class IntentClassifier:
             }
             joblib.dump(model_data, path)
         except Exception as e:
-            raise RuntimeError(f"Error al guardar el modelo: {str(e)}")
+            raise RuntimeError(f"Error al guardar el modelo en {path}: {str(e)}")
 
     def train(self, intents: List[Intent], test_size: float = 0.2) -> ClassificationMetrics:
         """
@@ -116,6 +138,10 @@ class IntentClassifier:
             # Entrenar modelo
             self.model.fit(X_train, y_train)
 
+            # Actualizar intent_labels después del entrenamiento
+            if hasattr(self.model, 'classes_'):
+                self.intent_labels = list(self.model.classes_)
+
             # Evaluar
             y_pred = self.model.predict(X_test)
             metrics = ClassificationMetrics(
@@ -128,34 +154,6 @@ class IntentClassifier:
         except Exception as e:
             raise RuntimeError(f"Error durante el entrenamiento: {str(e)}")
 
-    def _prepare_training_data(self, intents: List[Intent]) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Prepara los datos de entrenamiento
-
-        Args:
-            intents: Lista de intenciones
-
-        Returns:
-            Tupla de (features, labels)
-        """
-        processed_texts = []  # Lista para textos procesados
-        labels = []  # Lista para etiquetas
-        self.intent_labels = []
-
-        # Preparar datos
-        for intent in intents:
-            self.intent_labels.append(intent.name)
-            for example in intent.examples:
-                processed_text = self.processor.preprocess_text(example)
-                processed_texts.append(processed_text)
-                labels.append(intent.name)
-
-        # Vectorizar todos los textos de una vez
-        X = self.processor.vectorizer.transform(processed_texts)
-        y = np.array(labels)
-
-        return X, y
-
     def predict(self, text: str) -> Tuple[str, float]:
         """
         Predice la intención para un texto dado
@@ -167,10 +165,10 @@ class IntentClassifier:
             Tupla de (intención predicha, confianza)
 
         Raises:
-            RuntimeError: Si el modelo no está entrenado
+            RuntimeError: Si el modelo no está entrenado o no se ha cargado correctamente
         """
-        if not self.intent_labels:
-            raise RuntimeError("El modelo no está entrenado")
+        if not hasattr(self.model, 'predict') or not self.intent_labels:
+            raise RuntimeError("El modelo no está entrenado o no se ha cargado correctamente")
 
         try:
             # Preprocesar y vectorizar
@@ -181,30 +179,43 @@ class IntentClassifier:
             intent = self.model.predict(features)[0]
 
             # Obtener confianza (distancia al hiperplano)
-            confidence = float(abs(self.model.decision_function(features)[0]))
+            # Convertir el array de decisión a un escalar Python
+            decision_values = self.model.decision_function(features)
+            confidence = float(np.abs(decision_values).max())
 
             return intent, confidence
 
         except Exception as e:
             raise RuntimeError(f"Error en la predicción: {str(e)}")
 
-    def predict_batch(self, texts: List[str]) -> List[Tuple[str, float]]:
+    def _prepare_training_data(self, intents: List[Intent]) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Predice intenciones para una lista de textos
+        Prepara los datos de entrenamiento
 
         Args:
-            texts: Lista de textos
+            intents: Lista de intenciones
 
         Returns:
-            Lista de tuplas (intención, confianza)
+            Tupla de (features, labels)
         """
-        return [self.predict(text) for text in texts]
+        processed_texts = []
+        labels = []
+        self.intent_labels = []
+
+        # Preparar datos
+        for intent in intents:
+            self.intent_labels.append(intent.name)
+            for example in intent.examples:
+                processed_text = self.processor.preprocess_text(example)
+                processed_texts.append(processed_text)
+                labels.append(intent.name)
+
+        # Vectorizar textos
+        X = self.processor.vectorizer.transform(processed_texts)
+        y = np.array(labels)
+
+        return X, y
 
     def get_supported_intents(self) -> List[str]:
-        """
-        Obtiene las intenciones soportadas por el modelo
-
-        Returns:
-            Lista de nombres de intenciones
-        """
+        """Obtiene las intenciones soportadas por el modelo"""
         return self.intent_labels.copy()

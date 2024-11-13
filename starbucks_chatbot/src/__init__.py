@@ -11,11 +11,13 @@ def create_app():
     intentRepo = JSONIntentRepository("../../data/intents.json")
     nLPProcessor = NLPProcessor(menuRepo.get_menu(), intentRepo.get_intents_dict())
 
+    # Usar ruta por defecto para el modelo
+    classifier = IntentClassifier(nLPProcessor)
+
     chatBotService = ChatbotService(
         menuRepo,
         intentRepo,
         nLPProcessor,
-        IntentClassifier(nLPProcessor)
+        classifier
     )
-    App = ConsoleUI(chatBotService)
-    return App
+    return ConsoleUI(chatBotService)
