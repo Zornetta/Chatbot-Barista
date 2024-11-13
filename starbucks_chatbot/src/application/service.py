@@ -113,7 +113,7 @@ class ChatbotService:
             "ordenar_alimento": self._handle_purchase_intent,
             "preguntar_precio": self._handle_price_intent,
             "consultar_menu": self._handle_menu_intent,
-            "confirmar_orden": self._handle_order_confirmation,  # Handler específico para confirmación
+            "confirmar_orden": self._handle_order_confirmation,
             "cancelar_orden": self._handle_order_cancellation
         }
 
@@ -269,7 +269,7 @@ class ChatbotService:
             suggested_actions=["Ver menú", "Ver bebidas populares"]
         )
 
-    def _handle_menu_intent(self, entities: Optional[ExtractedEntities] = None) -> Response:
+    def _handle_menu_intent(self, intent: str = None, entities: ExtractedEntities = None) -> Response:
         """Maneja la intención de consultar el menú"""
         menu_text = self._format_menu_summary()
         return Response(
@@ -305,7 +305,7 @@ class ChatbotService:
             suggested_actions=["Ver bebidas", "Hacer un pedido"]
         )
 
-    def _handle_order_confirmation(self, intent: str, entities: ExtractedEntities) -> Response:
+    def _handle_order_confirmation(self, intent: str = None, entities: ExtractedEntities = None) -> Response:
         """Maneja la confirmación directa de una orden"""
         if self.conversation_state.current_order:
             order = self.conversation_state.current_order
@@ -325,7 +325,7 @@ class ChatbotService:
             suggested_actions=["Ver menú", "Hacer un pedido"]
         )
 
-    def _handle_order_cancellation(self, entities: Optional[ExtractedEntities] = None) -> Response:
+    def _handle_order_cancellation(self, intent: str = None, entities: ExtractedEntities = None) -> Response:
         """Maneja la cancelación de una orden"""
         self.conversation_state = ConversationState()
         return Response(
