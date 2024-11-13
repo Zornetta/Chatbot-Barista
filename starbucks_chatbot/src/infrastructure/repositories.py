@@ -37,12 +37,11 @@ class JSONMenuRepository(IMenuRepository):
         return self._menu_data
 
     def search_item(self, query: str) -> Optional[MenuItem]:
-        """Busca un item específico en el menú"""
+        """Busca un item específico en la sección de bebidas del menú"""
         self._load_data()
         query = query.lower()
 
-        # Debug de búsqueda
-        print(f"\nBuscando en el menú:")
+        print(f"\nBuscando en el menú de bebidas:")
         print(f"- Query: {query}")
 
         # Buscar en todas las categorías de bebidas
@@ -76,6 +75,50 @@ class JSONMenuRepository(IMenuRepository):
                         customizations=item['personalizaciones'],
                         keywords=item['keywords']
                     )
+
+        print(f"- No se encontraron coincidencias para: {query}")
+        return None
+
+    def search_food_item(self, query: str) -> Optional[MenuItem]:
+        """Busca un item específico en la sección de alimentos del menú"""
+        self._load_data()
+        query = query.lower()
+
+        print(f"\nBuscando alimento en el menú:")
+        print(f"- Query: {query}")
+
+        # Buscar en todas las categorías de alimentos
+        if 'alimentos' in self._menu_data:
+            for category_name, category in self._menu_data['alimentos'].items():
+                print(f"- Buscando en categoría: {category_name}")
+                for item in category:
+                    print(f"  - Comparando con item: {item['id']}")
+
+                    # Comparar directamente con el ID
+                    if query == item['id']:
+                        print(f"  - ¡Coincidencia encontrada por ID!")
+                        return MenuItem(
+                            id=item['id'],
+                            name=item['nombre'],
+                            category=item['categoria'],
+                            sizes=item.get('tamaños', ['individual']),
+                            prices=item.get('precios', {'individual': item['precio']}),
+                            customizations=item.get('personalizaciones', {}),
+                            keywords=item['keywords']
+                        )
+
+                    # Buscar en keywords
+                    if any(keyword.lower() == query for keyword in item['keywords']):
+                        print(f"  - ¡Coincidencia encontrada por keyword!")
+                        return MenuItem(
+                            id=item['id'],
+                            name=item['nombre'],
+                            category=item['categoria'],
+                            sizes=item.get('tamaños', ['individual']),
+                            prices=item.get('precios', {'individual': item['precio']}),
+                            customizations=item.get('personalizaciones', {}),
+                            keywords=item['keywords']
+                        )
 
         print(f"- No se encontraron coincidencias para: {query}")
         return None

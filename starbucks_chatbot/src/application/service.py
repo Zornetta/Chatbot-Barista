@@ -43,6 +43,7 @@ class ChatbotService:
         # Mapeo de intenciones a descripciones amigables
         self.intent_descriptions = {
             "ordenar_bebida": "realizar un pedido de bebida",
+            "ordenar_alimento": "realizar un pedido de comida",
             "preguntar_precio": "consultar precios",
             "consultar_menu": "ver el menú",
             "confirmar_orden": "confirmar tu pedido",
@@ -51,7 +52,8 @@ class ChatbotService:
 
         # Intenciones que no necesitan confirmación
         self.direct_intents = {
-            "consultar_menu"
+            "consultar_menu",
+            "confirmar_orden"
         }
 
     def process_message(self, text: str) -> Response:
@@ -113,18 +115,10 @@ class ChatbotService:
             )
 
     def handle_intent(self, intent: str, entities: ExtractedEntities) -> Response:
-        """
-        Maneja una intención específica y genera una respuesta apropiada
-
-        Args:
-            intent: Intención identificada
-            entities: Entidades extraídas
-
-        Returns:
-            Response apropiada para la intención
-        """
+        """Maneja una intención específica y genera una respuesta apropiada"""
         intent_handlers = {
             "ordenar_bebida": self._handle_order_intent,
+            "ordenar_alimento": self._handle_food_order_intent,  # Nuevo handler
             "preguntar_precio": self._handle_price_intent,
             "consultar_menu": self._handle_menu_intent,
             "preguntar_personalizacion": self._handle_customization_intent,
@@ -188,6 +182,64 @@ class ChatbotService:
 
         except Exception as e:
             print(f"\nError en _handle_order_intent: {str(e)}")
+            return Response(
+                text="Lo siento, ocurrió un error al procesar tu orden. ¿Podrías intentarlo de nuevo?",
+                suggested_actions=["Ver menú", "Empezar de nuevo"]
+            )
+
+    def _handle_food_order_intent(self, entities: ExtractedEntities) -> Response:
+        """Maneja la intención de ordenar comida"""
+        try:
+            # Debug: Imprimir estado al manejar orden
+            print(f"\nManejando orden de comida:")
+            print(f"- Entidades recibidas: {entities}")
+
+            if not self.conversation_state.current_order:
+                self.conversation_state.current_order = Order()
+
+            if entities and entities.alimento:  # Nueva propiedad para alimentos
+                print(f"- Buscando alimento: {entities.alimento}")
+                item = self.menu_repo.search_food_item(entities.alimento)  # Nuevo método
+                print(f"- Item encontrado: {item}")
+
+                if item:
+                    order_item = OrderItem(
+                        menu_item=item,
+                        size="individual",  # La mayoría de alimentos son tamaño individual
+                        customizations=entities.personalizaciones or []
+                    )
+                    self.conversation_state.current_order.add_item(order_item)
+
+                    print(f"- Item agregado a la orden: {order_item.menu_item.name}")
+
+                    suggested_actions = ["Confirmar orden", "Agregar más", "Ver orden actual"]
+                    if entities.personalizaciones:
+                        text = f"He agregado {item.name} con {', '.join(entities.personalizaciones)}. "
+                    else:
+                        text = f"He agregado {item.name}. "
+
+                    text += "¿Deseas agregar algo más?"
+
+                    return Response(
+                        text=text,
+                        suggested_actions=suggested_actions,
+                        order=self.conversation_state.current_order
+                    )
+                else:
+                    print(f"- No se encontró el alimento en el menú")
+                    return Response(
+                        text="Lo siento, no encontré ese alimento en nuestro menú. ¿Te gustaría ver las opciones disponibles?",
+                        suggested_actions=["Ver menú", "Ver comidas disponibles"]
+                    )
+
+            print(f"- No se proporcionó alimento en las entidades")
+            return Response(
+                text="¿Qué te gustaría ordenar de comer?",
+                suggested_actions=["Ver menú de comidas", "Ver opciones populares"]
+            )
+
+        except Exception as e:
+            print(f"\nError en _handle_food_order_intent: {str(e)}")
             return Response(
                 text="Lo siento, ocurrió un error al procesar tu orden. ¿Podrías intentarlo de nuevo?",
                 suggested_actions=["Ver menú", "Empezar de nuevo"]
@@ -338,13 +390,21 @@ class ChatbotService:
         return "\n".join([f"- {size}: ${price:.2f}" for size, price in item.prices.items()])
 
     def _format_menu_summary(self) -> str:
-        """Formatea un resumen del menú"""
+        """Formatea un resumen del menú incluyendo alimentos"""
         menu = self.menu_repo.get_menu()
         summary = []
 
+        # Agregar bebidas
         for category, items in menu["bebidas"].items():
             category_items = [item["nombre"] for item in items]
             summary.append(f"{category.title()}:\n- " + "\n- ".join(category_items))
+
+        # Agregar alimentos
+        if "alimentos" in menu:
+            summary.append("\nAlimentos:")
+            for category, items in menu["alimentos"].items():
+                category_items = [item["nombre"] for item in items]
+                summary.append(f"{category.title()}:\n- " + "\n- ".join(category_items))
 
         return "\n\n".join(summary)
 

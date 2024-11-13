@@ -13,7 +13,12 @@ class IMenuRepository(ABC):
 
     @abstractmethod
     def search_item(self, query: str) -> Optional['MenuItem']:
-        """Busca un item específico en el menú"""
+        """Busca un bebida específica en el menú"""
+        pass
+
+    @abstractmethod
+    def search_food_item(self, query: str) -> Optional['MenuItem']:
+        """Busca un comida específica en el menú"""
         pass
 
 class IIntentRepository(ABC):

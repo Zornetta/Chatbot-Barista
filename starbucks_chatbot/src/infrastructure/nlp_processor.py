@@ -12,6 +12,7 @@ import joblib
 class ExtractedEntities:
     """Clase para almacenar las entidades extraídas del texto"""
     bebida: Optional[str] = None
+    alimento: Optional[str] = None  # Nueva propiedad para alimentos
     tamaño: Optional[str] = None
     personalizaciones: List[str] = None
 
@@ -41,6 +42,7 @@ class NLPProcessor:
 
         # Compilar keywords y entidades del menú
         self.bebidas_keywords = self._compile_keywords()
+        self.alimentos_keywords = self._compile_food_keywords()
         self.tamaños = ["tall", "grande", "venti"]
 
     def _load_vectorizer(self, model_path: str = None) -> TfidfVectorizer:
@@ -86,6 +88,21 @@ class NLPProcessor:
                 keywords[bebida["id"]] = normalized_keywords
         return keywords
 
+    def _compile_food_keywords(self) -> Dict[str, List[str]]:
+        """Compila keywords de alimentos del menú"""
+        keywords = {}
+        if "alimentos" in self.menu_data:
+            for categoria in self.menu_data["alimentos"].values():
+                for item in categoria:
+                    normalized_keywords = []
+                    for keyword in item["keywords"]:
+                        normalized_keywords.append(keyword.lower())
+                        if " " in keyword:
+                            normalized_keywords.append(keyword.replace(" ", ""))
+                            normalized_keywords.append(keyword.replace(" ", "-"))
+                    keywords[item["id"]] = normalized_keywords
+        return keywords
+
     def preprocess_text(self, text: str) -> str:
         """
         Preprocesa el texto de entrada
@@ -106,12 +123,12 @@ class NLPProcessor:
         return " ".join(tokens)
 
     def extract_entities(self, text: str) -> ExtractedEntities:
-        """Extrae entidades del texto (bebida, tamaño, personalizaciones)"""
+        """Extrae entidades del texto"""
         doc = self.nlp(text.lower())
         entities = ExtractedEntities()
-
-        # Buscar bebida - primero intentar con frases completas
         text_lower = text.lower()
+
+        # Buscar bebida
         for bebida_id, keywords in self.bebidas_keywords.items():
             if any(keyword in text_lower for keyword in keywords):
                 entities.bebida = bebida_id
@@ -129,6 +146,25 @@ class NLPProcessor:
                 if entities.bebida:
                     break
 
+        # Buscar alimento si no se encontró bebida
+        if not entities.bebida:
+            for alimento_id, keywords in self.alimentos_keywords.items():
+                if any(keyword in text_lower for keyword in keywords):
+                    entities.alimento = alimento_id
+                    break
+
+        # Si no se encontró, intentar con palabras individuales _ Alimentos
+        if not entities.alimento:
+            text_tokens = set(text_lower.split())
+            for alimento_id, keywords in self.alimentos_keywords.items():
+                for keyword in keywords:
+                    keyword_tokens = set(keyword.split())
+                    if keyword_tokens.issubset(text_tokens):
+                        entities.alimento = alimento_id
+                        break
+                if entities.alimento:
+                    break
+
         # Buscar tamaño
         for tamaño in self.tamaños:
             if tamaño in text_lower:
@@ -138,11 +174,21 @@ class NLPProcessor:
         # Buscar personalizaciones
         personalizaciones = []
         for categoria in self.menu_data["bebidas"].values():
-            for bebida in categoria:
-                for tipo_pers, opciones in bebida["personalizaciones"].items():
+            for item in categoria:
+                for tipo_pers, opciones in item["personalizaciones"].items():
                     for opcion in opciones:
                         if opcion in text_lower:
                             personalizaciones.append(f"{tipo_pers}:{opcion}")
+
+        # También buscar personalizaciones de alimentos
+        if "alimentos" in self.menu_data:
+            for categoria in self.menu_data["alimentos"].values():
+                for item in categoria:
+                    if "personalizaciones" in item:
+                        for tipo_pers, opciones in item["personalizaciones"].items():
+                            for opcion in opciones:
+                                if opcion in text_lower:
+                                    personalizaciones.append(f"{tipo_pers}:{opcion}")
 
         entities.personalizaciones = list(set(personalizaciones))
 
