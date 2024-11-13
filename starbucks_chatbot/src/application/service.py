@@ -2,22 +2,28 @@
 
 from dataclasses import dataclass
 from typing import Optional, List, Dict, Tuple
+from enum import Enum
 from src.domain.interfaces import IMenuRepository, IIntentRepository
 from src.infrastructure.nlp_processor import NLPProcessor, ExtractedEntities
 from src.infrastructure.classifier import IntentClassifier
 from src.domain.models import Order, OrderItem, MenuItem
 from src.application.models import Response
 
+class InteractionMode(Enum):
+    PURCHASE = "purchase"  # Modo compra
+    QUERY = "query"       # Modo consulta
+
 @dataclass
 class ConversationState:
     """Estado actual de la conversación"""
     current_intent: Optional[str] = None
-    predicted_intent: Optional[str] = None  # Nueva propiedad para la intención predicha
+    predicted_intent: Optional[str] = None
     current_order: Optional[Order] = None
     pending_confirmation: bool = False
-    pending_intent_confirmation: bool = False  # Nuevo estado para confirmar intención
+    pending_intent_confirmation: bool = False
     last_entities: Optional[ExtractedEntities] = None
-    last_input: Optional[str] = None  # Guardamos el último input para reprocesarlo
+    last_input: Optional[str] = None
+    mode: InteractionMode = InteractionMode.QUERY  # Empezamos en modo consulta por defecto
     context: Dict = None
 
     def __post_init__(self):
@@ -45,28 +51,20 @@ class ChatbotService:
             "ordenar_bebida": "realizar un pedido de bebida",
             "ordenar_alimento": "realizar un pedido de comida",
             "preguntar_precio": "consultar precios",
-            "consultar_menu": "ver el menú",
-            "confirmar_orden": "confirmar tu pedido",
-            "cancelar_orden": "cancelar el pedido"
+            "consultar_menu": "ver el menú"
         }
 
-        # Intenciones que no necesitan confirmación
-        self.direct_intents = {
-            "consultar_menu",
-            "confirmar_orden"
-        }
+        # # Intenciones que no necesitan confirmación
+        # self.direct_intents = {
+        #     "consultar_menu",
+        #     "confirmar_orden"
+        # }
 
     def process_message(self, text: str) -> Response:
-        """
-        Procesa un mensaje del usuario y genera una respuesta
-        """
+        """Procesa un mensaje del usuario y genera una respuesta"""
         try:
-            # Debug: Imprimir estado actual
-            print(f"\nEstado actual:")
-            print(f"- Intent confirmación pendiente: {self.conversation_state.pending_intent_confirmation}")
-            print(f"- Intent predicho: {self.conversation_state.predicted_intent}")
-            print(f"- Entidades guardadas: {self.conversation_state.last_entities}")
-            print(f"- Último input: {self.conversation_state.last_input}")
+            print(f"\nProcesando mensaje: '{text}'")
+            print(f"Modo actual: {self.conversation_state.mode}")
 
             # Si estamos esperando confirmación de intención
             if self.conversation_state.pending_intent_confirmation:
@@ -79,36 +77,39 @@ class ChatbotService:
                 elif self._is_cancellation(text):
                     return self._handle_confirmation(False)
 
-            # Procesar nuevo input
+            # Procesar el input
             features, entities = self.nlp_processor.process_input(text)
             intent, confidence = self.intent_classifier.predict(text)
 
-            # Debug: Imprimir resultados de procesamiento
-            print(f"\nProcesamiento de input:")
-            print(f"- Texto recibido: {text}")
-            print(f"- Entidades encontradas: {entities}")
-            print(f"- Intención detectada: {intent}")
+            print(f"Intent detectado: {intent}")
+            print(f"Entidades encontradas: {entities}")
 
             # Actualizar estado
             self.conversation_state.last_entities = entities
             self.conversation_state.last_input = text
             self.conversation_state.predicted_intent = intent
 
-            # Si la intención es directa, procesarla inmediatamente
-            if intent in self.direct_intents:
-                return self.handle_intent(intent, entities)
+            # Manejar las intenciones según el modo actual y la intención detectada
+            if intent in ["ordenar_bebida", "ordenar_alimento"]:
+                # Cambiar a modo compra
+                self.conversation_state.mode = InteractionMode.PURCHASE
+                return self._handle_purchase_intent(intent, entities)
 
-            # Para otras intenciones, solicitar confirmación
-            self.conversation_state.pending_intent_confirmation = True
-            intent_description = self.intent_descriptions.get(intent, intent)
+            elif intent == "consultar_menu":
+                # Cambiar a modo consulta
+                self.conversation_state.mode = InteractionMode.QUERY
+                return self._handle_menu_intent(entities)
 
-            return Response(
-                text=f"Parece que quieres {intent_description}. ¿Es correcto? (sí/no)",
-                suggested_actions=["Sí", "No"]
-            )
+            elif intent == "preguntar_precio":
+                # Asegurar modo consulta
+                self.conversation_state.mode = InteractionMode.QUERY
+                return self._handle_price_query(text, entities)
+
+            else:
+                return self._handle_unknown_intent(entities)
 
         except Exception as e:
-            print(f"\nError en process_message: {str(e)}")
+            print(f"Error en process_message: {str(e)}")
             return Response(
                 text="Lo siento, tuve un problema procesando tu mensaje. ¿Podrías reformularlo?",
                 suggested_actions=["Ver menú", "Empezar de nuevo"]
@@ -117,8 +118,8 @@ class ChatbotService:
     def handle_intent(self, intent: str, entities: ExtractedEntities) -> Response:
         """Maneja una intención específica y genera una respuesta apropiada"""
         intent_handlers = {
-            "ordenar_bebida": self._handle_order_intent,
-            "ordenar_alimento": self._handle_food_order_intent,  # Nuevo handler
+            "ordenar_bebida": self._handle_purchase_intent,
+            "ordenar_alimento": self._handle_purchase_intent,  # Nuevo handler
             "preguntar_precio": self._handle_price_intent,
             "consultar_menu": self._handle_menu_intent,
             "preguntar_personalizacion": self._handle_customization_intent,
@@ -128,6 +129,13 @@ class ChatbotService:
 
         handler = intent_handlers.get(intent, self._handle_unknown_intent)
         return handler(entities)
+
+    def _handle_purchase_intent(self, intent: str, entities: ExtractedEntities) -> Response:
+        """Maneja las intenciones de compra (ordenar_bebida, ordenar_alimento)"""
+        if intent == "ordenar_bebida":
+            return self._handle_order_intent(entities)
+        else:  # ordenar_alimento
+            return self._handle_food_order_intent(entities)
 
     def _handle_order_intent(self, entities: ExtractedEntities) -> Response:
         """Maneja la intención de ordenar una bebida"""
@@ -265,8 +273,13 @@ class ChatbotService:
         """Maneja la intención de consultar el menú"""
         menu_text = self._format_menu_summary()
         return Response(
-            text=f"Este es nuestro menú:\n{menu_text}\n¿Qué te gustaría ordenar?",
-            suggested_actions=["Ver bebidas calientes", "Ver bebidas frías", "Ver precios"]
+            text=f"Este es nuestro menú:\n{menu_text}\n\n¿Qué te gustaría hacer?",
+            suggested_actions=[
+                "Ordenar algo",
+                "Consultar precios",
+                "Ver bebidas",
+                "Ver alimentos"
+            ]
         )
 
     def _handle_customization_intent(self, entities: ExtractedEntities) -> Response:
@@ -387,10 +400,13 @@ class ChatbotService:
 
     def _format_prices(self, item: MenuItem) -> str:
         """Formatea los precios de un item para mostrar"""
-        return "\n".join([f"- {size}: ${price:.2f}" for size, price in item.prices.items()])
+        if isinstance(item.prices, dict):
+            return "\n".join([f"- {size}: ${price:.2f}" for size, price in item.prices.items()])
+        else:
+            return f"${item.prices:.2f}"
 
     def _format_menu_summary(self) -> str:
-        """Formatea un resumen del menú incluyendo alimentos"""
+        """Formatea un resumen del menú incluyendo bebidas y alimentos"""
         menu = self.menu_repo.get_menu()
         summary = []
 
@@ -434,3 +450,43 @@ class ChatbotService:
 
         summary.append(f"\nTotal: ${order.total:.2f}")
         return "\n".join(summary)
+
+    def _handle_price_query(self, text: str, entities: ExtractedEntities) -> Response:
+        """Maneja las consultas de precio"""
+        print("\nProcesando consulta de precio")
+
+        # Intentar identificar producto usando los procesadores de ordenar_bebida/alimento
+        product = None
+
+        # Primero intentar con bebidas
+        drink_features, drink_entities = self.nlp_processor.process_input(text)
+        if drink_entities.bebida:
+            print(f"Bebida identificada: {drink_entities.bebida}")
+            product = self.menu_repo.search_item(drink_entities.bebida)
+
+        # Si no encontró bebida, intentar con alimentos
+        if not product and drink_entities.alimento:
+            print(f"Alimento identificado: {drink_entities.alimento}")
+            product = self.menu_repo.search_food_item(drink_entities.alimento)
+
+        if product:
+            # Mostrar precio y ofrecer compra
+            prices_text = self._format_prices(product)
+            return Response(
+                text=f"Los precios para {product.name} son:\n{prices_text}\n\n¿Te gustaría ordenarlo?",
+                suggested_actions=[
+                    f"Ordenar {product.name}",
+                    "Consultar otro precio",
+                    "Ver menú completo"
+                ]
+            )
+        else:
+            # No se identificó producto, pedir especificación
+            return Response(
+                text="¿De qué producto te gustaría saber el precio?",
+                suggested_actions=[
+                    "Ver bebidas disponibles",
+                    "Ver alimentos disponibles",
+                    "Ver menú completo"
+                ]
+            )
