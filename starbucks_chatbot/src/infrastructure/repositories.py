@@ -13,25 +13,47 @@ class JSONMenuRepository(IMenuRepository):
         self._menu_data = None
 
     def _load_data(self):
-        base_path = Path(__file__).parent
-        file_path = (base_path / self.file_path).resolve()
-
+        """Carga los datos del menú desde el archivo JSON"""
         if self._menu_data is None:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                self._menu_data = json.load(f)
+            try:
+                base_path = Path(__file__).parent
+                file_path = (base_path / self.file_path).resolve()
+                # Imprimir la ruta que está intentando cargar
+                print(f"\nCargando menú desde: {self.file_path}")
+
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    self._menu_data = json.load(f)
+
+                print("- Menú cargado exitosamente")
+                # Imprimir las categorías disponibles
+                print(f"- Categorías disponibles: {list(self._menu_data['bebidas'].keys())}")
+            except Exception as e:
+                print(f"Error cargando el menú: {str(e)}")
+                raise
 
     def get_menu(self) -> Dict:
+        """Obtiene todo el menú"""
         self._load_data()
         return self._menu_data
 
     def search_item(self, query: str) -> Optional[MenuItem]:
+        """Busca un item específico en el menú"""
         self._load_data()
         query = query.lower()
 
-        # Buscar en todas las categorías
-        for category in self._menu_data['bebidas'].values():
+        # Debug de búsqueda
+        print(f"\nBuscando en el menú:")
+        print(f"- Query: {query}")
+
+        # Buscar en todas las categorías de bebidas
+        for category_name, category in self._menu_data['bebidas'].items():
+            print(f"- Buscando en categoría: {category_name}")
             for item in category:
-                if query in [k.lower() for k in item['keywords']]:
+                print(f"  - Comparando con item: {item['id']}")
+
+                # Comparar directamente con el ID
+                if query == item['id']:
+                    print(f"  - ¡Coincidencia encontrada por ID!")
                     return MenuItem(
                         id=item['id'],
                         name=item['nombre'],
@@ -41,6 +63,21 @@ class JSONMenuRepository(IMenuRepository):
                         customizations=item['personalizaciones'],
                         keywords=item['keywords']
                     )
+
+                # Buscar en keywords
+                if any(keyword.lower() == query for keyword in item['keywords']):
+                    print(f"  - ¡Coincidencia encontrada por keyword!")
+                    return MenuItem(
+                        id=item['id'],
+                        name=item['nombre'],
+                        category=item['categoria'],
+                        sizes=item['tamaños'],
+                        prices=item['precios'],
+                        customizations=item['personalizaciones'],
+                        keywords=item['keywords']
+                    )
+
+        print(f"- No se encontraron coincidencias para: {query}")
         return None
 
 class JSONIntentRepository(IIntentRepository):

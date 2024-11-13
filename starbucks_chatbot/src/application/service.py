@@ -54,6 +54,13 @@ class ChatbotService:
         Procesa un mensaje del usuario y genera una respuesta
         """
         try:
+            # Debug: Imprimir estado actual
+            print(f"\nEstado actual:")
+            print(f"- Intent confirmación pendiente: {self.conversation_state.pending_intent_confirmation}")
+            print(f"- Intent predicho: {self.conversation_state.predicted_intent}")
+            print(f"- Entidades guardadas: {self.conversation_state.last_entities}")
+            print(f"- Último input: {self.conversation_state.last_input}")
+
             # Si estamos esperando confirmación de intención
             if self.conversation_state.pending_intent_confirmation:
                 return self._handle_intent_confirmation(text)
@@ -69,10 +76,21 @@ class ChatbotService:
             features, entities = self.nlp_processor.process_input(text)
             intent, confidence = self.intent_classifier.predict(text)
 
+            # Debug: Imprimir resultados de procesamiento
+            print(f"\nProcesamiento de input:")
+            print(f"- Texto recibido: {text}")
+            print(f"- Entidades encontradas: {entities}")
+            print(f"- Intención detectada: {intent}")
+
             # Actualizar estado
             self.conversation_state.last_entities = entities
             self.conversation_state.last_input = text
             self.conversation_state.predicted_intent = intent
+
+            # Debug: Imprimir estado actualizado
+            print(f"\nEstado actualizado:")
+            print(f"- Entidades guardadas: {self.conversation_state.last_entities}")
+            print(f"- Intent guardado: {self.conversation_state.predicted_intent}")
 
             # Solicitar confirmación de intención
             self.conversation_state.pending_intent_confirmation = True
@@ -84,6 +102,7 @@ class ChatbotService:
             )
 
         except Exception as e:
+            print(f"\nError en process_message: {str(e)}")
             return Response(
                 text="Lo siento, tuve un problema procesando tu mensaje. ¿Podrías reformularlo?",
                 suggested_actions=["Ver menú", "Empezar de nuevo"]
@@ -114,42 +133,61 @@ class ChatbotService:
 
     def _handle_order_intent(self, entities: ExtractedEntities) -> Response:
         """Maneja la intención de ordenar una bebida"""
-        if not self.conversation_state.current_order:
-            self.conversation_state.current_order = Order()
+        try:
+            # Debug: Imprimir estado al manejar orden
+            print(f"\nManejando orden:")
+            print(f"- Entidades recibidas: {entities}")
 
-        if entities.bebida:
-            item = self.menu_repo.search_item(entities.bebida)
-            if item:
-                order_item = OrderItem(
-                    menu_item=item,
-                    size=entities.tamaño or "grande",
-                    customizations=entities.personalizaciones or []
-                )
-                self.conversation_state.current_order.add_item(order_item)
+            if not self.conversation_state.current_order:
+                self.conversation_state.current_order = Order()
 
-                suggested_actions = ["Confirmar orden", "Agregar más", "Ver orden actual"]
-                if entities.personalizaciones:
-                    text = f"He agregado un {item.name} {order_item.size} con {', '.join(entities.personalizaciones)}. "
+            if entities and entities.bebida:
+                print(f"- Buscando bebida: {entities.bebida}")
+                item = self.menu_repo.search_item(entities.bebida)
+                print(f"- Item encontrado: {item}")
+
+                if item:
+                    order_item = OrderItem(
+                        menu_item=item,
+                        size=entities.tamaño or "grande",
+                        customizations=entities.personalizaciones or []
+                    )
+                    self.conversation_state.current_order.add_item(order_item)
+
+                    print(f"- Item agregado a la orden: {order_item.menu_item.name}")
+
+                    suggested_actions = ["Confirmar orden", "Agregar más", "Ver orden actual"]
+                    if entities.personalizaciones:
+                        text = f"He agregado un {item.name} {order_item.size} con {', '.join(entities.personalizaciones)}. "
+                    else:
+                        text = f"He agregado un {item.name} {order_item.size}. "
+
+                    text += "¿Deseas agregar algo más?"
+
+                    return Response(
+                        text=text,
+                        suggested_actions=suggested_actions,
+                        order=self.conversation_state.current_order
+                    )
                 else:
-                    text = f"He agregado un {item.name} {order_item.size}. "
+                    print(f"- No se encontró la bebida en el menú")
+                    return Response(
+                        text="Lo siento, no encontré esa bebida en nuestro menú. ¿Te gustaría ver las opciones disponibles?",
+                        suggested_actions=["Ver menú", "Ver bebidas populares"]
+                    )
 
-                text += "¿Deseas agregar algo más?"
+            print(f"- No se proporcionó bebida en las entidades")
+            return Response(
+                text="¿Qué bebida te gustaría ordenar?",
+                suggested_actions=["Ver menú", "Ver bebidas populares"]
+            )
 
-                return Response(
-                    text=text,
-                    suggested_actions=suggested_actions,
-                    order=self.conversation_state.current_order
-                )
-            else:
-                return Response(
-                    text="Lo siento, no encontré esa bebida en nuestro menú. ¿Te gustaría ver las opciones disponibles?",
-                    suggested_actions=["Ver menú", "Ver bebidas populares"]
-                )
-
-        return Response(
-            text="¿Qué bebida te gustaría ordenar?",
-            suggested_actions=["Ver menú", "Ver bebidas populares"]
-        )
+        except Exception as e:
+            print(f"\nError en _handle_order_intent: {str(e)}")
+            return Response(
+                text="Lo siento, ocurrió un error al procesar tu orden. ¿Podrías intentarlo de nuevo?",
+                suggested_actions=["Ver menú", "Empezar de nuevo"]
+            )
 
     def _handle_price_intent(self, entities: ExtractedEntities) -> Response:
         """Maneja la intención de consultar precios"""
@@ -227,18 +265,38 @@ class ChatbotService:
         """
         Maneja la confirmación de la intención detectada
         """
-        self.conversation_state.pending_intent_confirmation = False
+        try:
+            # Debug: Imprimir estado antes de procesar
+            print(f"\nManejando confirmación de intención:")
+            print(f"- Texto de confirmación: {text}")
+            print(f"- Intent pendiente: {self.conversation_state.predicted_intent}")
+            print(f"- Entidades guardadas: {self.conversation_state.last_entities}")
 
-        if self._is_confirmation(text):
-            # Proceder con la intención confirmada
-            intent = self.conversation_state.predicted_intent
-            self.conversation_state.current_intent = intent
-            return self.handle_intent(intent, self.conversation_state.last_entities)
-        else:
-            # Solicitar nuevo input
+            self.conversation_state.pending_intent_confirmation = False
+
+            if self._is_confirmation(text):
+                # Proceder con la intención confirmada
+                intent = self.conversation_state.predicted_intent
+                entities = self.conversation_state.last_entities
+
+                print(f"\nConfirmación aceptada:")
+                print(f"- Intent a procesar: {intent}")
+                print(f"- Entidades a usar: {entities}")
+
+                self.conversation_state.current_intent = intent
+                return self.handle_intent(intent, entities)
+            else:
+                # Solicitar nuevo input
+                return Response(
+                    text="Entiendo. ¿Podrías reformular tu solicitud?",
+                    suggested_actions=["Ver menú", "Ver opciones disponibles"]
+                )
+
+        except Exception as e:
+            print(f"\nError en _handle_intent_confirmation: {str(e)}")
             return Response(
-                text="Entiendo. ¿Podrías reformular tu solicitud?",
-                suggested_actions=["Ver menú", "Ver opciones disponibles"]
+                text="Lo siento, ocurrió un error al procesar tu confirmación. ¿Podrías intentarlo de nuevo?",
+                suggested_actions=["Ver menú", "Empezar de nuevo"]
             )
 
     def _handle_confirmation(self, confirmed: bool) -> Response:

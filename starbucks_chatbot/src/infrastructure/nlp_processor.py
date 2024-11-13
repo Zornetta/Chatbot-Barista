@@ -71,7 +71,19 @@ class NLPProcessor:
         keywords = {}
         for categoria in self.menu_data["bebidas"].values():
             for bebida in categoria:
-                keywords[bebida["id"]] = bebida["keywords"]
+                # Normalizar los keywords
+                normalized_keywords = []
+                for keyword in bebida["keywords"]:
+                    # Agregar keyword original
+                    normalized_keywords.append(keyword)
+                    # Agregar versión sin espacios
+                    normalized_keywords.append(keyword.replace(" ", ""))
+                    # Agregar versión con espacios alternativos
+                    if " " in keyword:
+                        normalized_keywords.append(keyword.replace(" ", "-"))
+                        normalized_keywords.append(keyword.replace(" ", "_"))
+
+                keywords[bebida["id"]] = normalized_keywords
         return keywords
 
     def preprocess_text(self, text: str) -> str:
@@ -94,27 +106,32 @@ class NLPProcessor:
         return " ".join(tokens)
 
     def extract_entities(self, text: str) -> ExtractedEntities:
-        """
-        Extrae entidades del texto (bebida, tamaño, personalizaciones)
-
-        Args:
-            text: Texto de entrada
-
-        Returns:
-            ExtractedEntities con las entidades encontradas
-        """
+        """Extrae entidades del texto (bebida, tamaño, personalizaciones)"""
         doc = self.nlp(text.lower())
         entities = ExtractedEntities()
 
-        # Buscar bebida
+        # Buscar bebida - primero intentar con frases completas
+        text_lower = text.lower()
         for bebida_id, keywords in self.bebidas_keywords.items():
-            if any(keyword in text.lower() for keyword in keywords):
+            if any(keyword in text_lower for keyword in keywords):
                 entities.bebida = bebida_id
                 break
 
+        # Si no se encontró, intentar con palabras individuales
+        if not entities.bebida:
+            text_tokens = set(text_lower.split())
+            for bebida_id, keywords in self.bebidas_keywords.items():
+                for keyword in keywords:
+                    keyword_tokens = set(keyword.split())
+                    if keyword_tokens.issubset(text_tokens):
+                        entities.bebida = bebida_id
+                        break
+                if entities.bebida:
+                    break
+
         # Buscar tamaño
         for tamaño in self.tamaños:
-            if tamaño in text.lower():
+            if tamaño in text_lower:
                 entities.tamaño = tamaño
                 break
 
@@ -124,10 +141,16 @@ class NLPProcessor:
             for bebida in categoria:
                 for tipo_pers, opciones in bebida["personalizaciones"].items():
                     for opcion in opciones:
-                        if opcion in text.lower():
+                        if opcion in text_lower:
                             personalizaciones.append(f"{tipo_pers}:{opcion}")
 
         entities.personalizaciones = list(set(personalizaciones))
+
+        # Debug
+        print(f"\nExtracción de entidades:")
+        print(f"- Texto original: {text}")
+        print(f"- Keywords disponibles: {self.bebidas_keywords}")
+        print(f"- Entidades encontradas: {entities}")
 
         return entities
 
