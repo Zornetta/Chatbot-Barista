@@ -46,6 +46,7 @@ class ChatbotService:
         self.intent_classifier = intent_classifier
         self.confidence_threshold = confidence_threshold
         self.conversation_state = ConversationState()
+        self.price_calculator = PriceCalculator()
 
         # Mapeo de intenciones a descripciones amigables
         self.intent_descriptions = {
@@ -55,30 +56,18 @@ class ChatbotService:
             "consultar_menu": "ver el menú"
         }
 
-        self.price_calculator = PriceCalculator()
-
-        # # Intenciones que no necesitan confirmación
-        # self.direct_intents = {
-        #     "consultar_menu",
-        #     "confirmar_orden"
-        # }
+        # Intenciones que no necesitan confirmación
+        self.direct_intents = {
+            "consultar_menu",
+            "confirmar_orden",
+            #"cancelar_orden"
+        }
 
     def process_message(self, text: str) -> Response:
         """Procesa un mensaje del usuario y genera una respuesta"""
         try:
             print(f"\nProcesando mensaje: '{text}'")
             print(f"Modo actual: {self.conversation_state.mode}")
-
-            # Si estamos esperando confirmación de intención
-            if self.conversation_state.pending_intent_confirmation:
-                return self._handle_intent_confirmation(text)
-
-            # Si estamos esperando confirmación de orden
-            if self.conversation_state.pending_confirmation:
-                if self._is_confirmation(text):
-                    return self._handle_confirmation(True)
-                elif self._is_cancellation(text):
-                    return self._handle_confirmation(False)
 
             # Procesar el input
             features, entities = self.nlp_processor.process_input(text)
@@ -87,27 +76,26 @@ class ChatbotService:
             print(f"Intent detectado: {intent}")
             print(f"Entidades encontradas: {entities}")
 
+            # Si es una intención directa, procesarla inmediatamente
+            if intent in self.direct_intents:
+                print(f"Procesando intención directa: {intent}")
+                return self.handle_intent(intent, entities)
+
             # Actualizar estado
             self.conversation_state.last_entities = entities
             self.conversation_state.last_input = text
             self.conversation_state.predicted_intent = intent
 
-            # Manejar las intenciones según el modo actual y la intención detectada
+            # Manejar las intenciones según el modo actual
             if intent in ["ordenar_bebida", "ordenar_alimento"]:
-                # Cambiar a modo compra
                 self.conversation_state.mode = InteractionMode.PURCHASE
                 return self._handle_purchase_intent(intent, entities)
-
             elif intent == "consultar_menu":
-                # Cambiar a modo consulta
                 self.conversation_state.mode = InteractionMode.QUERY
                 return self._handle_menu_intent(entities)
-
             elif intent == "preguntar_precio":
-                # Asegurar modo consulta
                 self.conversation_state.mode = InteractionMode.QUERY
                 return self._handle_price_query(text, entities)
-
             else:
                 return self._handle_unknown_intent(entities)
 
@@ -122,16 +110,15 @@ class ChatbotService:
         """Maneja una intención específica y genera una respuesta apropiada"""
         intent_handlers = {
             "ordenar_bebida": self._handle_purchase_intent,
-            "ordenar_alimento": self._handle_purchase_intent,  # Nuevo handler
+            "ordenar_alimento": self._handle_purchase_intent,
             "preguntar_precio": self._handle_price_intent,
             "consultar_menu": self._handle_menu_intent,
-            "preguntar_personalizacion": self._handle_customization_intent,
-            "confirmar_orden": self._handle_order_confirmation,
+            "confirmar_orden": self._handle_order_confirmation,  # Handler específico para confirmación
             "cancelar_orden": self._handle_order_cancellation
         }
 
         handler = intent_handlers.get(intent, self._handle_unknown_intent)
-        return handler(entities)
+        return handler(intent, entities)
 
     def _handle_purchase_intent(self, intent: str, entities: ExtractedEntities) -> Response:
         """Maneja las intenciones de compra (ordenar_bebida, ordenar_alimento)"""
@@ -318,20 +305,24 @@ class ChatbotService:
             suggested_actions=["Ver bebidas", "Hacer un pedido"]
         )
 
-    def _handle_order_confirmation(self, entities: Optional[ExtractedEntities] = None) -> Response:
-        """Maneja la confirmación de una orden"""
+    def _handle_order_confirmation(self, intent: str, entities: ExtractedEntities) -> Response:
+        """Maneja la confirmación directa de una orden"""
         if self.conversation_state.current_order:
-            order_summary = self._format_order_summary(self.conversation_state.current_order)
-            self.conversation_state.pending_confirmation = True
+            order = self.conversation_state.current_order
+            # Limpiar el estado de la conversación
+            self.conversation_state = ConversationState()
+
             return Response(
-                text=f"Tu orden es:\n{order_summary}\n¿Deseas confirmar esta orden?",
-                suggested_actions=["Confirmar", "Modificar", "Cancelar"],
-                order=self.conversation_state.current_order
+                text=f"¡Gracias por tu orden! Tu pedido está siendo preparado:\n" +
+                     self._format_order_summary(order) +
+                     "\n\n¿Hay algo más en lo que pueda ayudarte?",
+                suggested_actions=["Ordenar algo más", "Ver menú"],
+                order=order
             )
 
         return Response(
-            text="No hay una orden activa. ¿Te gustaría ordenar algo?",
-            suggested_actions=["Ver menú", "Ordenar bebida"]
+            text="No hay una orden activa para confirmar. ¿Te gustaría ordenar algo?",
+            suggested_actions=["Ver menú", "Hacer un pedido"]
         )
 
     def _handle_order_cancellation(self, entities: Optional[ExtractedEntities] = None) -> Response:
