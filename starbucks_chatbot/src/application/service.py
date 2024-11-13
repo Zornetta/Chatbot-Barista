@@ -12,9 +12,12 @@ from src.application.models import Response
 class ConversationState:
     """Estado actual de la conversación"""
     current_intent: Optional[str] = None
+    predicted_intent: Optional[str] = None  # Nueva propiedad para la intención predicha
     current_order: Optional[Order] = None
     pending_confirmation: bool = False
+    pending_intent_confirmation: bool = False  # Nuevo estado para confirmar intención
     last_entities: Optional[ExtractedEntities] = None
+    last_input: Optional[str] = None  # Guardamos el último input para reprocesarlo
     context: Dict = None
 
     def __post_init__(self):
@@ -37,37 +40,48 @@ class ChatbotService:
         self.confidence_threshold = confidence_threshold
         self.conversation_state = ConversationState()
 
+        # Mapeo de intenciones a descripciones amigables
+        self.intent_descriptions = {
+            "ordenar_bebida": "realizar un pedido de bebida",
+            "preguntar_precio": "consultar precios",
+            "consultar_menu": "ver el menú",
+            "confirmar_orden": "confirmar tu pedido",
+            "cancelar_orden": "cancelar el pedido"
+        }
+
     def process_message(self, text: str) -> Response:
         """
         Procesa un mensaje del usuario y genera una respuesta
-
-        Args:
-            text: Texto del usuario
-
-        Returns:
-            Response con la respuesta apropiada
         """
         try:
-            # Extraer entidades y predecir intención
-            features, entities = self.nlp_processor.process_input(text)
-            intent, confidence = self.intent_classifier.predict(text)
+            # Si estamos esperando confirmación de intención
+            if self.conversation_state.pending_intent_confirmation:
+                return self._handle_intent_confirmation(text)
 
-            # Actualizar estado
-            self.conversation_state.last_entities = entities
-
-            # Verificar confirmación pendiente
+            # Si estamos esperando confirmación de orden
             if self.conversation_state.pending_confirmation:
                 if self._is_confirmation(text):
                     return self._handle_confirmation(True)
                 elif self._is_cancellation(text):
                     return self._handle_confirmation(False)
 
-            # Manejar la intención si la confianza es suficiente
-            if confidence >= self.confidence_threshold:
-                self.conversation_state.current_intent = intent
-                return self.handle_intent(intent, entities)
-            else:
-                return self._handle_low_confidence(intent, confidence)
+            # Procesar nuevo input
+            features, entities = self.nlp_processor.process_input(text)
+            intent, confidence = self.intent_classifier.predict(text)
+
+            # Actualizar estado
+            self.conversation_state.last_entities = entities
+            self.conversation_state.last_input = text
+            self.conversation_state.predicted_intent = intent
+
+            # Solicitar confirmación de intención
+            self.conversation_state.pending_intent_confirmation = True
+            intent_description = self.intent_descriptions.get(intent, intent)
+
+            return Response(
+                text=f"Parece que quieres {intent_description}. ¿Es correcto? (sí/no)",
+                suggested_actions=["Sí", "No"]
+            )
 
         except Exception as e:
             return Response(
@@ -209,12 +223,23 @@ class ChatbotService:
             suggested_actions=["Ver menú", "Hacer pedido", "Ver precios"]
         )
 
-    def _handle_low_confidence(self, intent: str, confidence: float) -> Response:
-        """Maneja casos donde la confianza en la predicción es baja"""
-        return Response(
-            text="No estoy seguro de entender. ¿Podrías reformular tu solicitud?",
-            suggested_actions=["Ver menú", "Hacer pedido", "Ver precios"]
-        )
+    def _handle_intent_confirmation(self, text: str) -> Response:
+        """
+        Maneja la confirmación de la intención detectada
+        """
+        self.conversation_state.pending_intent_confirmation = False
+
+        if self._is_confirmation(text):
+            # Proceder con la intención confirmada
+            intent = self.conversation_state.predicted_intent
+            self.conversation_state.current_intent = intent
+            return self.handle_intent(intent, self.conversation_state.last_entities)
+        else:
+            # Solicitar nuevo input
+            return Response(
+                text="Entiendo. ¿Podrías reformular tu solicitud?",
+                suggested_actions=["Ver menú", "Ver opciones disponibles"]
+            )
 
     def _handle_confirmation(self, confirmed: bool) -> Response:
         """Maneja la respuesta a una confirmación pendiente"""

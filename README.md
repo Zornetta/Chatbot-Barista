@@ -20,6 +20,11 @@ starbucks_chatbot/
 ├── analyze_solution.py
 └── app.py
 
+
+<!-- Si quiero analizar el proyecto -->
+# Analizar proyecto
+python analyze_solution.py --definition_path=analyze_solution_definition.json
+
 <!-- Si quiero correr el proyecto -->
 # Crear entorno virtual
 python -m venv venv
