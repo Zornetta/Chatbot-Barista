@@ -62,3 +62,4 @@ pip list | grep starbucks_chatbot
 
 # 4. Ejecutar el script de nuevo
 python scripts/train_models.py
+python scripts/train_classifier.py

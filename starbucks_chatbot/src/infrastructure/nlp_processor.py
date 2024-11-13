@@ -2,9 +2,11 @@
 
 import spacy
 import numpy as np
+from pathlib import Path
 from sklearn.feature_extraction.text import TfidfVectorizer
 from dataclasses import dataclass
 from typing import List, Dict, Optional, Tuple
+import joblib
 
 @dataclass
 class ExtractedEntities:
@@ -18,13 +20,14 @@ class ExtractedEntities:
             self.personalizaciones = []
 
 class NLPProcessor:
-    def __init__(self, menu_data: dict, intents_data: list):
+    def __init__(self, menu_data: dict, intents_data: list, model_path: str = None):
         """
         Inicializa el procesador NLP
 
         Args:
             menu_data: Diccionario con los datos del menú
             intents_data: Lista de intenciones y ejemplos
+            model_path: Ruta opcional al modelo vectorizador
         """
         # Cargar modelo de spaCy (español)
         self.nlp = spacy.load("es_core_news_sm")
@@ -33,16 +36,35 @@ class NLPProcessor:
         self.menu_data = menu_data
         self.intents_data = intents_data
 
-        # Inicializar vectorizador
-        self.vectorizer = TfidfVectorizer(
-            lowercase=True,
-            ngram_range=(1, 2),
-            stop_words='spanish'
-        )
+        # Cargar vectorizador entrenado
+        self.vectorizer = self._load_vectorizer(model_path)
 
         # Compilar keywords y entidades del menú
         self.bebidas_keywords = self._compile_keywords()
         self.tamaños = ["tall", "grande", "venti"]
+
+    def _load_vectorizer(self, model_path: str = None) -> TfidfVectorizer:
+        """
+        Carga el vectorizador entrenado desde el archivo
+
+        Args:
+            model_path: Ruta opcional al modelo. Si no se proporciona,
+                       usa la ruta por defecto
+
+        Returns:
+            Vectorizador entrenado
+
+        Raises:
+            RuntimeError: Si no se puede cargar el vectorizador
+        """
+        try:
+            if model_path is None:
+                base_path = Path(__file__).parent.parent.parent
+                model_path = base_path / "models" / "vectorizer.joblib"
+
+            return joblib.load(model_path)
+        except Exception as e:
+            raise RuntimeError(f"Error al cargar el vectorizador: {str(e)}")
 
     def _compile_keywords(self) -> Dict[str, List[str]]:
         """Compila todos los keywords de bebidas del menú"""
@@ -111,7 +133,7 @@ class NLPProcessor:
 
     def prepare_for_classification(self, text: str) -> np.ndarray:
         """
-        Prepara el texto para la clasificación vectorizándolo
+        Prepara el texto para la clasificación usando el vectorizador entrenado
 
         Args:
             text: Texto preprocesado
@@ -119,7 +141,11 @@ class NLPProcessor:
         Returns:
             Vector de características
         """
-        return self.vectorizer.transform([text])
+        # Usar el vectorizador entrenado para transformar el texto
+        try:
+            return self.vectorizer.transform([text])
+        except Exception as e:
+            raise RuntimeError(f"Error al vectorizar el texto: {str(e)}")
 
     def process_input(self, text: str) -> Tuple[np.ndarray, ExtractedEntities]:
         """
@@ -136,3 +162,12 @@ class NLPProcessor:
         features = self.prepare_for_classification(processed_text)
 
         return features, entities
+
+    def get_vectorizer(self) -> TfidfVectorizer:
+        """
+        Obtiene el vectorizador actual
+
+        Returns:
+            Vectorizador actual
+        """
+        return self.vectorizer

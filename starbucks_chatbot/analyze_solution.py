@@ -43,14 +43,14 @@ def write_content_to_file(content, output_file):
 def process_layer(directory, exclude_patterns=None):
     content = ''
     files = get_all_files_recursive(directory, '.py')
-    
+
     # Ordenar archivos para tener un orden consistente
     files.sort()
-    
+
     for file_path in files:
         if not should_exclude_file(file_path, exclude_patterns):
             content += read_file_content(file_path)
-    
+
     return content
 
 def process_directory(directory, exclude_patterns=None):
@@ -58,11 +58,11 @@ def process_directory(directory, exclude_patterns=None):
     if os.path.exists(directory):
         files = get_all_files_recursive(directory, '.py')
         files.sort()
-        
+
         for file_path in files:
             if not should_exclude_file(file_path, exclude_patterns):
                 content += read_file_content(file_path)
-    
+
     return content
 
 def process_init_file(directory):
@@ -75,41 +75,47 @@ def process_init_file(directory):
 def analyze_project_structure(base_path, definition):
     error_log = []
     processed_directories = []
-    
+
     # Definir las rutas base y resultados
     results_base = os.path.join(base_path, 'analysis_results')
-    
+
     # Estructura de directorios del proyecto
     project_dirs = {
         'src': {
             'path': os.path.join(base_path, 'src'),
             'layers': definition['layers'],
-            'exclude_key': 'src'
+            'exclude_key': 'src',
+            'prefix': 'src_'
         },
         'tests': {
             'path': os.path.join(base_path, 'tests'),
             'layers': definition['layers'],
-            'exclude_key': 'tests'
+            'exclude_key': 'tests',
+            'prefix': 'tests_'
         },
         'data': {
             'path': os.path.join(base_path, 'data'),
             'layers': None,
-            'exclude_key': 'data'
+            'exclude_key': 'data',
+            'prefix': ''
         },
         'models': {
             'path': os.path.join(base_path, 'models'),
             'layers': None,
-            'exclude_key': 'models'
+            'exclude_key': 'models',
+            'prefix': ''
         },
         'scripts': {
             'path': os.path.join(base_path, 'scripts'),
             'layers': None,
-            'exclude_key': 'scripts'
+            'exclude_key': 'scripts',
+            'prefix': ''
         },
         'docs': {
             'path': os.path.join(base_path, 'docs'),
             'layers': None,
-            'exclude_key': 'docs'
+            'exclude_key': 'docs',
+            'prefix': ''
         }
     }
 
@@ -136,13 +142,16 @@ def analyze_project_structure(base_path, definition):
                         try:
                             exclude_patterns = definition.get('exclude', {}).get(dir_config['exclude_key'], {}).get(layer, [])
                             content = process_layer(layer_path, exclude_patterns)
-                            
-                            output_file = os.path.join(results_dir, f'{layer}.py')
+
+                            # Add prefix to the output filename
+                            output_filename = f"{dir_config['prefix']}{layer}.py"
+                            output_file = os.path.join(results_dir, output_filename)
+
                             if write_content_to_file(content, output_file):
                                 print(f"Created {output_file}")
-                                processed_directories.append(f"{dir_name}/{layer}")
+                                processed_directories.append(f"{dir_name}/{output_filename}")
                             else:
-                                error_log.append(f"Error writing combined file for {dir_name}/{layer}")
+                                error_log.append(f"Error writing combined file for {dir_name}/{output_filename}")
                         except Exception as e:
                             error_message = f"Error processing {dir_name}/{layer}: {str(e)}\n{traceback.format_exc()}"
                             print(error_message)
@@ -151,7 +160,7 @@ def analyze_project_structure(base_path, definition):
                 try:
                     exclude_patterns = definition.get('exclude', {}).get(dir_config['exclude_key'], [])
                     content = process_directory(dir_config['path'], exclude_patterns)
-                    
+
                     if content:  # Solo crear archivo si hay contenido
                         output_file = os.path.join(results_dir, f'{dir_name}_combined.py')
                         if write_content_to_file(content, output_file):
@@ -165,10 +174,10 @@ def analyze_project_structure(base_path, definition):
                     error_log.append(error_message)
 
     # Procesar archivos en la raíz
-    root_files = [f for f in os.listdir(base_path) if f.endswith('.py') and 
-                 os.path.isfile(os.path.join(base_path, f)) and 
+    root_files = [f for f in os.listdir(base_path) if f.endswith('.py') and
+                 os.path.isfile(os.path.join(base_path, f)) and
                  f != 'analyze_solution.py']
-    
+
     if root_files:
         for file in root_files:
             content = read_file_content(os.path.join(base_path, file))
@@ -186,11 +195,11 @@ def analyze_project_structure(base_path, definition):
     print("    ├── src/")
     print("    │   ├── __init__.py")
     for layer in definition['layers']:
-        print(f"    │   ├── {layer}.py")
+        print(f"    │   ├── src_{layer}.py")
     print("    ├── tests/")
     print("    │   ├── __init__.py")
     for layer in definition['layers']:
-        print(f"    │   ├── {layer}.py")
+        print(f"    │   ├── tests_{layer}.py")
     for dir_name in ['data', 'models', 'scripts', 'docs']:
         print(f"    ├── {dir_name}/")
         print(f"    │   ├── __init__.py")
@@ -198,11 +207,11 @@ def analyze_project_structure(base_path, definition):
     if root_files:
         for file in root_files:
             print(f"    ├── {file}")
-    
+
     print("\nSuccessfully processed:")
     for directory in processed_directories:
         print(f"- {directory}")
-    
+
     if error_log:
         print("\nErrors encountered:")
         for error in error_log:
