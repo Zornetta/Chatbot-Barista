@@ -324,11 +324,12 @@ class ChatbotService:
 
             self.conversation_state.pending_payment = True
 
+            # Quitamos las acciones sugeridas para este caso específico
             return Response(
                 text=f"¡Gracias por tu orden! Tu pedido ha sido confirmado:\n" +
                     self._format_order_summary(order) +
                     f"\n{payment_options}",
-                suggested_actions=["1", "2", "3", "4"],
+                suggested_actions=[],  # Lista vacía de acciones sugeridas
                 order=order
             )
 
@@ -565,6 +566,7 @@ class ChatbotService:
             # Resetear el estado
             self.conversation_state = ConversationState()
 
+            # Aquí sí mostramos acciones sugeridas para el siguiente paso
             return Response(
                 text=f"¡Pago exitoso con {selected_method}! 🎉\n\n" +
                     "¡Gracias por comprar a través de nuestro chatBot!\n" +
@@ -574,12 +576,13 @@ class ChatbotService:
                 order=None
             )
         else:
+            # En caso de error tampoco mostramos acciones sugeridas
             return Response(
                 text="Por favor, selecciona un método de pago válido:\n" +
                     "1. Efectivo\n" +
                     "2. Transferencia\n" +
                     "3. Tarjeta Crédito/Débito\n" +
                     "4. Aplicación de pago",
-                suggested_actions=["1", "2", "3", "4"],
+                suggested_actions=[],  # Lista vacía de acciones sugeridas
                 order=self.conversation_state.current_order
             )
