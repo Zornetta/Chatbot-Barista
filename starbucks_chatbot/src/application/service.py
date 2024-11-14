@@ -145,9 +145,13 @@ class ChatbotService:
                 if item:
                     # Mostrar primero los precios disponibles si no se especificó tamaño
                     if not entities.tamaño:
-                        price_options = self.price_calculator.format_price_options(item)
+                        prices_text = f"Encontré {item.name}. Precios y calorías disponibles:\n"
+                        for size, price in item.prices.items():
+                            calories = item.get_calories(size)
+                            prices_text += f"- {size.capitalize()}: ${price:.2f} ({calories} calorías)\n"
+
                         return Response(
-                            text=f"Encontré {item.name}. {price_options}\n\n¿Qué tamaño prefieres?",
+                            text=prices_text + "\n¿Qué tamaño prefieres?",
                             suggested_actions=item.sizes,
                             order=self.conversation_state.current_order
                         )
@@ -422,11 +426,16 @@ class ChatbotService:
         return any(cancel in text.lower() for cancel in cancellations)
 
     def _format_prices(self, item: MenuItem) -> str:
-        """Formatea los precios de un item para mostrar"""
+        """Formatea los precios y calorías de un item para mostrar"""
         if isinstance(item.prices, dict):
-            return "\n".join([f"- {size}: ${price:.2f}" for size, price in item.prices.items()])
+            lines = []
+            for size, price in item.prices.items():
+                calories = item.get_calories(size)
+                lines.append(f"- {size.capitalize()}: ${price:.2f} ({calories} calorías)")
+            return "\n".join(lines)
         else:
-            return f"${item.prices:.2f}"
+            calories = item.get_calories('individual')
+            return f"${item.prices:.2f} ({calories} calorías)"
 
     def _format_menu_summary(self) -> str:
         """Formatea un resumen del menú incluyendo bebidas y alimentos"""
@@ -463,17 +472,22 @@ class ChatbotService:
                "- Jarabes: vainilla, caramelo, avellana"
 
     def _format_order_summary(self, order: Order) -> str:
-        """Formatea un resumen de la orden con desglose de precios"""
+        """Formatea un resumen de la orden con desglose de precios y calorías"""
         summary = []
+        total_calories = 0
+
         for item in order.items:
             breakdown = self.price_calculator.calculate_item_price(item)
+            calories = item.menu_item.get_calories(item.size)
+            total_calories += calories
 
             item_text = f"- {item.menu_item.name} ({item.size})"
             if item.customizations:
                 item_text += f" con {', '.join(item.customizations)}"
 
-            # Agregar desglose de precios
+            # Agregar desglose de precios y calorías
             item_text += f"\n  Base: ${breakdown.base_price:.2f}"
+            item_text += f" ({calories} calorías)"
             for custom, price in breakdown.customization_prices.items():
                 item_text += f"\n  {custom}: +${price:.2f}"
             item_text += f"\n  Subtotal: ${breakdown.total:.2f}"
@@ -483,6 +497,7 @@ class ChatbotService:
         # Agregar total general
         total = self.price_calculator.calculate_order_total(order.items)
         summary.append(f"\nTotal Final: ${total:.2f}")
+        summary.append(f"Calorías Totales: {total_calories}")
 
         return "\n".join(summary)
 
@@ -490,24 +505,25 @@ class ChatbotService:
         """Maneja las consultas de precio"""
         print("\nProcesando consulta de precio")
 
-        # Intentar identificar producto usando los procesadores de ordenar_bebida/alimento
-        product = None
-
         # Primero intentar con bebidas
-        drink_features, drink_entities = self.nlp_processor.process_input(text)
-        if drink_entities.bebida:
-            print(f"Bebida identificada: {drink_entities.bebida}")
-            product = self.menu_repo.search_item(drink_entities.bebida)
+        product = None
+        if entities.bebida:
+            print(f"Bebida identificada: {entities.bebida}")
+            product = self.menu_repo.search_item(entities.bebida)
 
         # Si no encontró bebida, intentar con alimentos
-        if not product and drink_entities.alimento:
-            print(f"Alimento identificado: {drink_entities.alimento}")
-            product = self.menu_repo.search_food_item(drink_entities.alimento)
+        if not product and entities.alimento:
+            print(f"Alimento identificado: {entities.alimento}")
+            product = self.menu_repo.search_food_item(entities.alimento)
 
         if product:
-            prices_text = self._format_prices(product)
+            text = f"Los precios y calorías para {product.name} son:\n"
+            for size, price in product.prices.items():
+                calories = product.get_calories(size)
+                text += f"- {size.capitalize()}: ${price:.2f} ({calories} calorías)\n"
+
             return self._create_response_with_order(
-                f"Los precios para {product.name} son:\n{prices_text}\n\n¿Te gustaría ordenarlo?",
+                text + "\n¿Te gustaría ordenarlo?",
                 [f"Ordenar {product.name}", "Consultar otro precio", "Ver menú completo"]
             )
         else:

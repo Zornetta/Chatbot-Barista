@@ -15,6 +15,11 @@
           "grande": 850,
           "venti": 950
         },
+        "calorias": {
+          "tall": 190,
+          "grande": 225,
+          "venti": 260
+        },
         "personalizaciones": {
           "leche": [
             "entera",
@@ -71,6 +76,11 @@
           "tall": 700,
           "grande": 800,
           "venti": 900
+        },
+        "calorias": {
+          "tall": 140,
+          "grande": 180,
+          "venti": 220
         },
         "personalizaciones": {
           "leche": [
@@ -129,6 +139,11 @@
           "grande": 700,
           "venti": 800
         },
+        "calorias": {
+          "tall": 170,
+          "grande": 205,
+          "venti": 230
+        },
         "personalizaciones": {
           "shots": [
             "simple",
@@ -177,6 +192,11 @@
           "tall": 800,
           "grande": 900,
           "venti": 1000
+        },
+        "calorias": {
+          "tall":150,
+          "grande": 175,
+          "venti": 225
         },
         "personalizaciones": {
           "leche": [
@@ -238,6 +258,11 @@
           "grande": 900,
           "venti": 1000
         },
+        "calorias": {
+          "tall":250,
+          "grande": 275,
+          "venti": 300
+        },
         "personalizaciones": {
           "leche": [
             "entera",
@@ -298,6 +323,11 @@
           "grande": 800,
           "venti": 900
         },
+        "calorias": {
+          "tall":100,
+          "grande": 150,
+          "venti": 175
+        },
         "personalizaciones": {
           "leche": [
             "entera",
@@ -347,6 +377,11 @@
           "tall": 700,
           "grande": 800,
           "venti": 900
+        },
+        "calorias": {
+          "tall":100,
+          "grande": 150,
+          "venti": 175
         },
         "personalizaciones": {
           "leche": [
@@ -398,6 +433,11 @@
           "tall": 650,
           "grande": 750,
           "venti": 850
+        },
+        "calorias": {
+          "tall":170,
+          "grande": 190,
+          "venti": 220
         },
         "personalizaciones": {
           "leche": [
@@ -456,6 +496,11 @@
           "grande": 800,
           "venti": 900
         },
+        "calorias": {
+          "tall":200,
+          "grande": 225,
+          "venti": 250
+        },
         "personalizaciones": {
           "hielo": [
             "normal",
@@ -504,6 +549,11 @@
           "tall": 700,
           "grande": 800,
           "venti": 900
+        },
+        "calorias": {
+          "tall":210,
+          "grande": 235,
+          "venti": 260
         },
         "personalizaciones": {
           "hielo": [
@@ -564,6 +614,9 @@
           "individual"
         ],
         "precio": 500,
+        "calorias": {
+          "individual": 260
+        },
         "personalizaciones": {
           "temperatura": [
             "caliente",
@@ -602,6 +655,9 @@
           "individual"
         ],
         "precio": 450,
+        "calorias": {
+          "individual": 350
+        },
         "personalizaciones": {
           "temperatura": [
             "caliente",
@@ -646,6 +702,9 @@
           "individual"
         ],
         "precio": 800,
+        "calorias": {
+          "individual": 250
+        },
         "personalizaciones": {
           "temperatura": [
             "caliente",
@@ -690,6 +749,9 @@
           "individual"
         ],
         "precio": 850,
+        "calorias": {
+          "individual": 250
+        },
         "personalizaciones": {
           "temperatura": [
             "caliente",
@@ -735,6 +797,9 @@
           "porcion"
         ],
         "precio": 700,
+        "calorias": {
+          "individual": 400
+        },
         "personalizaciones": {
           "temperatura": [
             "frío",
@@ -781,6 +846,9 @@
           "individual"
         ],
         "precio": 600,
+        "calorias": {
+          "individual": 325
+        },
         "personalizaciones": {
           "temperatura": [
             "caliente",
@@ -832,6 +900,9 @@
           "individual": 300,
           "pack_3": 800
         },
+        "calorias": {
+          "individual": 200
+        },
         "personalizaciones": {
           "temperatura": [
             "caliente",
@@ -870,6 +941,9 @@
           "individual"
         ],
         "precio": 400,
+        "calorias": {
+          "individual": 225
+        },
         "personalizaciones": {
           "temperatura": [
             "caliente",
@@ -918,6 +992,9 @@
           "individual"
         ],
         "precio": 900,
+        "calorias": {
+          "individual": 225
+        },
         "personalizaciones": {
           "proteina": [
             "pollo",
@@ -963,6 +1040,9 @@
           "individual"
         ],
         "precio": 850,
+        "calorias": {
+          "individual": 250
+        },
         "personalizaciones": {
           "aceitunas": [
             "con",

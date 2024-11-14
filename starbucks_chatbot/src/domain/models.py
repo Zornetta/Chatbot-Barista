@@ -13,10 +13,15 @@ class MenuItem:
     prices: Dict[str, float]
     customizations: Dict[str, List[str]]
     keywords: List[str]
+    calories: Dict[str, int] = field(default_factory=dict)  # Nuevo campo con valor por defecto
 
     def get_base_price(self, size: str) -> float:
         """Obtiene el precio base para un tamaño específico"""
         return self.prices.get(size, 0.0)
+
+    def get_calories(self, size: str) -> int:
+        """Obtiene las calorías para un tamaño específico"""
+        return self.calories.get(size, 0)
 
     def is_customization_valid(self, customization_type: str, value: str) -> bool:
         """Verifica si una personalización es válida para este item"""

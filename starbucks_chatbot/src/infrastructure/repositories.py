@@ -53,28 +53,12 @@ class JSONMenuRepository(IMenuRepository):
                 # Comparar directamente con el ID
                 if query == item['id']:
                     print(f"  - ¡Coincidencia encontrada por ID!")
-                    return MenuItem(
-                        id=item['id'],
-                        name=item['nombre'],
-                        category=item['categoria'],
-                        sizes=item['tamaños'],
-                        prices=item['precios'],
-                        customizations=item['personalizaciones'],
-                        keywords=item['keywords']
-                    )
+                    return self._create_beverage_menu_item(item)
 
                 # Buscar en keywords
                 if any(keyword.lower() == query for keyword in item['keywords']):
                     print(f"  - ¡Coincidencia encontrada por keyword!")
-                    return MenuItem(
-                        id=item['id'],
-                        name=item['nombre'],
-                        category=item['categoria'],
-                        sizes=item['tamaños'],
-                        prices=item['precios'],
-                        customizations=item['personalizaciones'],
-                        keywords=item['keywords']
-                    )
+                    return self._create_beverage_menu_item(item)
 
         print(f"- No se encontraron coincidencias para: {query}")
         return None
@@ -97,31 +81,49 @@ class JSONMenuRepository(IMenuRepository):
                     # Comparar directamente con el ID
                     if query == item['id']:
                         print(f"  - ¡Coincidencia encontrada por ID!")
-                        return MenuItem(
-                            id=item['id'],
-                            name=item['nombre'],
-                            category=item['categoria'],
-                            sizes=item.get('tamaños', ['individual']),
-                            prices=item.get('precios', {'individual': item['precio']}),
-                            customizations=item.get('personalizaciones', {}),
-                            keywords=item['keywords']
-                        )
+                        return self._create_food_menu_item(item)
 
                     # Buscar en keywords
                     if any(keyword.lower() == query for keyword in item['keywords']):
                         print(f"  - ¡Coincidencia encontrada por keyword!")
-                        return MenuItem(
-                            id=item['id'],
-                            name=item['nombre'],
-                            category=item['categoria'],
-                            sizes=item.get('tamaños', ['individual']),
-                            prices=item.get('precios', {'individual': item['precio']}),
-                            customizations=item.get('personalizaciones', {}),
-                            keywords=item['keywords']
-                        )
+                        return self._create_food_menu_item(item)
 
         print(f"- No se encontraron coincidencias para: {query}")
         return None
+
+    def _create_beverage_menu_item(self, item_data: Dict) -> MenuItem:
+        """Crea un MenuItem para bebidas con precios y calorías por tamaño"""
+        return MenuItem(
+            id=item_data['id'],
+            name=item_data['nombre'],
+            category=item_data['categoria'],
+            sizes=item_data['tamaños'],
+            prices=item_data['precios'],
+            calories=item_data.get('calorias', {
+                'tall': 0,
+                'grande': 0,
+                'venti': 0
+            }),  # Manejo de calorías por tamaño para bebidas
+            customizations=item_data.get('personalizaciones', {}),
+            keywords=item_data['keywords']
+        )
+
+    def _create_food_menu_item(self, item_data: Dict) -> MenuItem:
+        """Crea un MenuItem para alimentos con precio único y calorías por porción"""
+        # Para alimentos, convertir precio único a diccionario por tamaño
+        size = item_data.get('tamaños', ['individual'])[0]
+        prices = {size: item_data.get('precio', 0)} if 'precio' in item_data else item_data.get('precios', {})
+
+        return MenuItem(
+            id=item_data['id'],
+            name=item_data['nombre'],
+            category=item_data['categoria'],
+            sizes=item_data.get('tamaños', ['individual']),
+            prices=prices,
+            calories=item_data.get('calorias', {size: 0}),  # Manejo de calorías para porción individual
+            customizations=item_data.get('personalizaciones', {}),
+            keywords=item_data['keywords']
+        )
 
 class JSONIntentRepository(IIntentRepository):
     def __init__(self, file_path: str):
