@@ -10,6 +10,12 @@ from src.domain.models import Order, OrderItem, MenuItem
 from src.application.models import Response
 from src.domain.pricing.price_calculator import PriceCalculator, PriceBreakdown
 
+class PaymentMethod(Enum):
+    CASH = "efectivo"
+    TRANSFER = "transferencia"
+    CARD = "tarjeta"
+    APP = "aplicacion"
+
 class InteractionMode(Enum):
     PURCHASE = "purchase"  # Modo compra
     QUERY = "query"       # Modo consulta
@@ -68,6 +74,10 @@ class ChatbotService:
         try:
             print(f"\nProcesando mensaje: '{text}'")
             print(f"Modo actual: {self.conversation_state.mode}")
+
+            # Si hay un pago pendiente, procesar como pago
+            if hasattr(self.conversation_state, 'pending_payment') and self.conversation_state.pending_payment:
+                return self._handle_payment(text)
 
             # Procesar el input
             features, entities = self.nlp_processor.process_input(text)
@@ -304,14 +314,21 @@ class ChatbotService:
         """Maneja la confirmación directa de una orden"""
         if self.conversation_state.current_order:
             order = self.conversation_state.current_order
-            # Limpiar el estado de la conversación
-            self.conversation_state = ConversationState()
+            payment_options = (
+                "\n* Seleccione el medio de pago:\n"
+                "1. Efectivo\n"
+                "2. Transferencia\n"
+                "3. Tarjeta Crédito/Débito\n"
+                "4. Aplicación de pago"
+            )
+
+            self.conversation_state.pending_payment = True
 
             return Response(
-                text=f"¡Gracias por tu orden! Tu pedido está siendo preparado:\n" +
-                     self._format_order_summary(order) +
-                     "\n\n¿Hay algo más en lo que pueda ayudarte?",
-                suggested_actions=["Ordenar algo más", "Ver menú"],
+                text=f"¡Gracias por tu orden! Tu pedido ha sido confirmado:\n" +
+                    self._format_order_summary(order) +
+                    f"\n{payment_options}",
+                suggested_actions=["1", "2", "3", "4"],
                 order=order
             )
 
@@ -526,3 +543,43 @@ class ChatbotService:
             suggested_actions=suggested_actions,
             order=self.conversation_state.current_order
         )
+
+    def _handle_payment(self, text: str) -> Response:
+        """Maneja el proceso de pago"""
+        # Mapeo de entradas a métodos de pago
+        payment_methods = {
+            "1": "Efectivo",
+            "2": "Transferencia",
+            "3": "Tarjeta Crédito/Débito",
+            "4": "Aplicación de pago",
+            "efectivo": "Efectivo",
+            "transferencia": "Transferencia",
+            "tarjeta": "Tarjeta Crédito/Débito",
+            "aplicacion": "Aplicación de pago"
+        }
+
+        input_text = text.lower().strip()
+        selected_method = payment_methods.get(input_text)
+
+        if selected_method:
+            # Resetear el estado
+            self.conversation_state = ConversationState()
+
+            return Response(
+                text=f"¡Pago exitoso con {selected_method}! 🎉\n\n" +
+                    "¡Gracias por comprar a través de nuestro chatBot!\n" +
+                    "Tu pedido estará listo en breve.\n\n" +
+                    "¿Hay algo más en lo que pueda ayudarte?",
+                suggested_actions=["Ver menú", "Hacer nuevo pedido"],
+                order=None
+            )
+        else:
+            return Response(
+                text="Por favor, selecciona un método de pago válido:\n" +
+                    "1. Efectivo\n" +
+                    "2. Transferencia\n" +
+                    "3. Tarjeta Crédito/Débito\n" +
+                    "4. Aplicación de pago",
+                suggested_actions=["1", "2", "3", "4"],
+                order=self.conversation_state.current_order
+            )
